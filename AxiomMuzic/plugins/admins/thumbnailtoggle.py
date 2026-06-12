@@ -22,9 +22,9 @@ async def thumbnail_toggle_callback(_, query: CallbackQuery):
     new_status = toggle_thumbnail_status(chat_id)
 
     status_text = (
-        "🖼 ᴛʜᴜᴍʙɴᴀɪʟ ᴇɴᴀʙʟᴇᴅ"
+        "ᴛʜᴜᴍʙɴᴀɪʟ ᴇɴᴀʙʟᴇᴅ"
         if new_status == "on"
-        else "🖼 ᴛʜᴜᴍʙɴᴀɪʟ ᴅɪsᴀʙʟᴇᴅ"
+        else "ᴛʜᴜᴍʙɴᴀɪʟ ᴅɪsᴀʙʟᴇᴅ"
     )
 
     try:
