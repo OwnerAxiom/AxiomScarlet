@@ -114,9 +114,9 @@ def stream_markup_timer(_, chat_id, played, dur):
     thumb_status = get_thumbnail_status(chat_id)
 
     thumb_text = (
-        "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏɴ"
+        "ᴛʜᴜᴍʙ : ᴏɴ"
         if thumb_status == "on"
-        else "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏғғ"
+        else "ᴛʜᴜᴍʙ : ᴏғғ"
     )
     
     thumb_style = (
