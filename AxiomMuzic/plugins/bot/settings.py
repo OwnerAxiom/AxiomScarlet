@@ -26,11 +26,14 @@ from pyrogram.types import (
 from AxiomMuzic import app
 from AxiomMuzic.utils.database import (
     add_nonadmin_chat,
+    autoplay_off,
+    autoplay_on,
     get_authuser,
     get_authuser_names,
     get_playmode,
     get_playtype,
     get_upvote_count,
+    is_autoplay,
     is_nonadmin_chat,
     is_skipmode,
     remove_nonadmin_chat,
@@ -51,6 +54,113 @@ from AxiomMuzic.utils.inline.settings import (
 from AxiomMuzic.utils.inline.start import private_panel
 from config import BANNED_USERS, OWNER_ID
 import config
+
+TOGGLE_COMMAND_RE = re.compile(
+    r"^[!/.](?P<command>autoplay|aplay|thumbnail|thumb|thum)(?:@\w+)?"
+    r"(?:\s+(?P<state>on|off|enable|disable|enabled|disabled))?\s*$",
+    re.IGNORECASE,
+)
+
+def feature_markup(feature: str, status: bool):
+    callback_prefix = "autoplay_toggle" if feature == "autoplay" else "thumbnail_toggle"
+    toggle_text = "ᴛᴜʀɴ ᴏғғ ❌" if status else "ᴛᴜʀɴ ᴏɴ ✅"
+    toggle_state = "off" if status else "on"
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    toggle_text,
+                    callback_data=f"{callback_prefix}|{toggle_state}",
+                )
+            ],
+            [InlineKeyboardButton("⋞ ᴄʟᴏsє ⋟", callback_data="close")],
+        ]
+    )
+
+
+def autoplay_panel_text(status: bool):
+    current = "ᴇɴᴀʙʟᴇᴅ ✅" if status else "ᴅɪsᴀʙʟᴇᴅ ❌"
+    return (
+        "<b>♬ ᴀᴜᴛᴏᴘʟᴀʏ sᴇᴛᴛɪɴɢs</b>\n\n"
+        f"<b>ᴄᴜʀʀᴇɴᴛ sᴛᴀᴛᴜs:</b> {current}\n\n"
+        "<b>Quick use:</b> <code>/autoplay on</code> | <code>/autoplay off</code>"
+    )
+
+
+def thumbnail_panel_text(status: bool):
+    current = "ᴇɴᴀʙʟᴇᴅ ✅" if status else "ᴅɪsᴀʙʟᴇᴅ ❌"
+    return (
+        "<b>𝚻ʜ꧊‌𝛖ϻβηᴧιℓ 𝚺ᴇᴛᴛɪɴɢs</b>\n\n"
+        f"<b>ᴄᴜʀʀᴇɴᴛ sᴛᴀᴛᴜs:</b> {current}\n\n"
+        "<b>Quick use:</b> <code>/thumb on</code> | <code>/thumb off</code>"
+    )
+
+
+@app.on_message(filters.create(toggle_command_filter) & filters.group & ~BANNED_USERS, group=-1)
+async def autoplay_thumbnail_toggle_command(_, message: Message):
+    if not message.from_user:
+        return await message.reply_text("<b>Please use this command from a user account.</b>")
+
+    command, state = toggle_state_from_message(message)
+    if not command:
+        return
+
+    is_auto_command = command in ["autoplay", "aplay"]
+    feature = "autoplay" if is_auto_command else "thumbnail"
+    chat_id = message.chat.id
+
+    if state in ["on", "enable", "enabled", "off", "disable", "disabled"]:
+        if not await can_toggle_feature(chat_id, message.from_user.id):
+            return await message.reply_text(f"<b>Only admins can change {feature} mode.</b>")
+        enable = state in ["on", "enable", "enabled"]
+        if is_auto_command:
+            await autoplay_on(chat_id) if enable else await autoplay_off(chat_id)
+        else:
+            await thumb_on(chat_id) if enable else await thumb_off(chat_id)
+        status = enable
+    else:
+        status = await is_autoplay(chat_id) if is_auto_command else await is_thumbmode(chat_id)
+
+    await message.reply_text(
+        autoplay_panel_text(status) if is_auto_command else thumbnail_panel_text(status),
+        reply_markup=feature_markup(feature, status),
+        disable_web_page_preview=True,
+    )
+
+
+@app.on_callback_query(filters.regex(r"^(autoplay_toggle|thumbnail_toggle)\|(on|off)$") & ~BANNED_USERS, group=-1)
+async def autoplay_thumbnail_toggle_callback(_, callback_query: CallbackQuery):
+    feature, state = callback_query.data.split("|", 1)
+    is_auto_callback = feature == "autoplay_toggle"
+    chat_id = callback_query.message.chat.id
+
+    if not await can_toggle_feature(chat_id, callback_query.from_user.id):
+        label = "autoplay" if is_auto_callback else "thumbnail"
+        return await callback_query.answer(
+            f"Only admins can change {label} mode.", show_alert=True
+        )
+
+    enable = state == "on"
+    if is_auto_callback:
+        await autoplay_on(chat_id) if enable else await autoplay_off(chat_id)
+        label = "Autoplay"
+        text = autoplay_panel_text(enable)
+        markup = feature_markup("autoplay", enable)
+    else:
+        await thumb_on(chat_id) if enable else await thumb_off(chat_id)
+        label = "Thumbnail"
+        text = thumbnail_panel_text(enable)
+        markup = feature_markup("thumbnail", enable)
+
+    await callback_query.answer(
+        f"{label} {'enabled ✅' if enable else 'disabled ❌'}",
+        show_alert=True,
+    )
+    await callback_query.edit_message_text(
+        text,
+        reply_markup=markup,
+        disable_web_page_preview=True,
+    )
 
 
 @app.on_message(
