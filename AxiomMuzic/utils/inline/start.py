@@ -5,7 +5,7 @@ from pyrogram.types import InlineKeyboardButton
 from pyrogram.enums import ButtonStyle
 
 import config
-from AxiomMusic import app
+from AxiomMuzic import app
 
 def axiombtn():
     return random.choice([
