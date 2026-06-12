@@ -27,8 +27,8 @@ from AxiomMuzic.mongo.couples_db import _get_image, get_couple
 POLICE = [
     [
         InlineKeyboardButton(
-            text="ᴧxɪσϻ sυᴘᴘσʀᴛ ☏︎"
-            url=f"https://t.me/Axlomm"
+            text="ᴧxɪσϻ sυᴘᴘσʀᴛ ☏︎",
+            url=f"https://t.me/Axlomm",
         ),
     ],
 ]
