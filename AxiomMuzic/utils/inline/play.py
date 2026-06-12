@@ -111,6 +111,19 @@ def stream_markup_timer(_, chat_id, played, dur):
         bar = "┃┊—————————♡┊┃"
         bar_style = ButtonStyle.PRIMARY
 
+    thumb_status = get_thumbnail_status(chat_id)
+
+    thumb_text = (
+        "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏɴ"
+        if thumb_status == "on"
+        else "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏғғ"
+    )
+    
+    thumb_style = (
+        ButtonStyle.SUCCESS
+        if thumb_status == "on"
+        else ButtonStyle.DANGER
+    )
     buttons = [
         [
             InlineKeyboardButton(
@@ -124,6 +137,9 @@ def stream_markup_timer(_, chat_id, played, dur):
             InlineKeyboardButton(text="II", callback_data=f"ADMIN Pause|{chat_id}", style=random_style()),
             InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}", style=random_style()),
             InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}", style=random_style()),
+        ],
+        [
+            InlineKeyboardButton(text=thumb_text, callback_data=f"THUMBTOGGLE|{chat_id}", style=thumb_style,),
         ],
 
         [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close",  style=random_style())],
