@@ -39,7 +39,7 @@ from AxiomMuzic.utils.inline import help_pannel, private_panel, start_panel
 from strings import get_string
 from config import BANNED_USERS, MAANAV_IMG
 
-EFFECT_ID = [
+EFFECT_IDS = [
     5104841245755180586,
     5107584321108051014,
     5104841245755180586,
