@@ -11,11 +11,36 @@
 #
 # ❤️ Made with dedication and love by AxiomBots
 # -----------------------------------------------
+import random
+import asyncio
 import math
-from pyrogram.types import InlineKeyboardButton
-from AxiomMuzic import app
 import config
+from pyrogram.types import InlineKeyboardButton
 from AxiomMuzic.utils.formatters import time_to_seconds
+from AxiomMuzic import app
+from pyrogram.enums import ButtonStyle
+from AxiomMuzic.utils.stream.thumbnail import get_thumbnail_status
+
+def random_style():
+    return random.choice([
+        ButtonStyle.SUCCESS,
+        ButtonStyle.DANGER,
+        ButtonStyle.PRIMARY
+    ])
+
+async def auto_button_animation(message, chat_id, get_keyboard_func):
+    while True:
+        try:
+            await asyncio.sleep(3)
+
+            markup = InlineKeyboardMarkup(
+                get_keyboard_func(chat_id)
+            )
+
+            await message.edit_reply_markup(reply_markup=markup)
+
+        except Exception:
+            break
 
 
 def track_markup(_, videoid, user_id, channel, fplay):
@@ -57,40 +82,51 @@ def stream_markup_timer(_, chat_id, played, dur):
 
     if 0 < umm <= 10:
         bar = "┃┊♡—————————┊┃"
+        bar_style = ButtonStyle.PRIMARY
     elif 10 < umm < 20:
         bar = "┃┊—♡————————┊┃"
+        bar_style = ButtonStyle.SUCCESS
     elif 20 <= umm < 30:
         bar = "┃┊——♡———————┊┃"
+        bar_style = ButtonStyle.DANGER
     elif 30 <= umm < 40:
         bar = "┃┊———♡——————┊┃"
+        bar_style = ButtonStyle.PRIMARY
     elif 40 <= umm < 50:
         bar = "┃┊————♡—————┊┃"
+        bar_style = ButtonStyle.SUCCESS
     elif 50 <= umm < 60:
         bar = "┃┊—————♡————┊┃"
+        bar_style = ButtonStyle.PRIMARY
     elif 60 <= umm < 70:
         bar = "┃┊——————♡———┊┃"
+        bar_style = ButtonStyle.DANGER
     elif 70 <= umm < 80:
         bar = "┃┊———————♡——┊┃"
+        bar_style = ButtonStyle.SUCCESS
     elif 80 <= umm < 95:
         bar = "┃┊————————♡—┊┃"
+        bar_style = ButtonStyle.DANGER
     else:
         bar = "┃┊—————————♡┊┃"
+        bar_style = ButtonStyle.PRIMARY
 
     buttons = [
         [
             InlineKeyboardButton(
                 text=f"{played} {bar} {remaining}",
                 url=f"https://t.me/{app.username}?startgroup=true",
+                style=bar_style,
             )
         ],
         [
-            InlineKeyboardButton(text="▷", callback_data=f"ADMIN Resume|{chat_id}"),
-            InlineKeyboardButton(text="II", callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
-            InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
+            InlineKeyboardButton(text="▷", callback_data=f"ADMIN Resume|{chat_id}", style=random_style()),
+            InlineKeyboardButton(text="II", callback_data=f"ADMIN Pause|{chat_id}", style=random_style()),
+            InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}", style=random_style()),
+            InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}", style=random_style()),
         ],
 
-        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
+        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close",  style=random_style())],
     ]
     return buttons
 
