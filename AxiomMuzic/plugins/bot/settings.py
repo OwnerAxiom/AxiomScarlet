@@ -11,6 +11,8 @@
 #
 # ❤️ Made with dedication and love by AxiomBots
 # -----------------------------------------------
+import re
+import random
 from pyrogram import filters
 import asyncio
 from time import time, strftime, gmtime
