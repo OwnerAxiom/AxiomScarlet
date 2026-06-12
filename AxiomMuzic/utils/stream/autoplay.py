@@ -1,10 +1,10 @@
 import asyncio
 
 import config
-from AxiomMusic import LOGGER, YouTube, app
-from AxiomMusic.misc import db
-from AxiomMusic.utils.database import is_autoplay
-from AxiomMusic.utils.stream.queue import put_queue
+from AxiomMuzic import LOGGER, YouTube, app
+from AxiomMuzic.misc import db
+from AxiomMuzic.utils.database import is_autoplay
+from AxiomMuzic.utils.stream.queue import put_queue
 
 AUTOPLAY_BATCH_SIZE = 3
 AUTOPLAY_REFETCH_THRESHOLD = 1
