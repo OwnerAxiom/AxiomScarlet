@@ -93,28 +93,24 @@ DEBUG_IGNORE_LOG = True
 
 ###### IMAGE URLS ######
 
-START_IMG_URL = getenv("START_IMG_URL", "https://files.catbox.moe/ak96mx.jpg")
-PING_IMG_URL = getenv("PING_IMG_URL", "https://files.catbox.moe/ak96mx.jpg")
-PLAYLIST_IMG_URL = "https://files.catbox.moe/lrwbj6.jpg"
-STATS_IMG_URL = "https://files.catbox.moe/ak96mx.jpg"
-TELEGRAM_AUDIO_URL = "https://files.catbox.moe/aesldg.jpg"
-TELEGRAM_VIDEO_URL = "https://files.catbox.moe/aesldg.jpg"
-STREAM_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
-SOUNCLOUD_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
-YOUTUBE_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
-SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
-SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
-SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/aesldg.jpg"
+START_IMG_URL = getenv("START_IMG_URL", "https://litter.catbox.moe/6c3qbo.jpg")
+PING_IMG_URL = getenv("PING_IMG_URL", "https://litter.catbox.moe/6c3qbo.jpg")
+PLAYLIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+STATS_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+TELEGRAM_AUDIO_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+TELEGRAM_VIDEO_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+STREAM_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+SOUNCLOUD_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+YOUTUBE_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+SPOTIFY_ARTIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+SPOTIFY_ALBUM_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+SPOTIFY_PLAYLIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
 
 
 MAANAV_IMG = [
-    "https://files.catbox.moe/dw0as6.jpg",
-    "https://files.catbox.moe/t2m1pv.jpg",
-    "https://files.catbox.moe/lsbotb.jpg",
-    "https://files.catbox.moe/huuy1f.jpg",
-    "https://files.catbox.moe/7vfivr.jpg",
-    "https://files.catbox.moe/dqtuv2.jpg",
-    "https://files.catbox.moe/ac3tzn.jpg"
+    "https://litter.catbox.moe/6c3qbo.jpg",
+    "https://litter.catbox.moe/6c3qbo.jpg",
+    "https://litter.catbox.moe/6c3qbo.jpg"
 ]
 
 
