@@ -124,7 +124,7 @@ async def get_thumb(videoid: str) -> str:
     draw.line([(BAR_X + BAR_RED_LEN, BAR_Y), (BAR_X + BAR_TOTAL_LEN, BAR_Y)], fill="gray", width=5)
     draw.ellipse([(BAR_X + BAR_RED_LEN - 7, BAR_Y - 7), (BAR_X + BAR_RED_LEN + 7, BAR_Y + 7)], fill="red")
 
-    draw.text((BAR_X, BAR_Y + 15), "00:00", fill="black", font=regular_font)
+    draw.text((BAR_X, BAR_Y + 15), "01:13", fill="black", font=regular_font)
     end_text = "Live" if is_live else duration_text
     draw.text((BAR_X + BAR_TOTAL_LEN - (90 if is_live else 60), BAR_Y + 15), end_text, fill="red" if is_live else "black", font=regular_font)
 
