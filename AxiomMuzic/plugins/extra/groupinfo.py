@@ -15,7 +15,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from AxiomMuzic import app
 
-@app.on_message(filters.command("groupinfo", prefixes="/", ""))
+@app.on_message(filters.command("groupinfo", prefixes=["/", ""]))
 async def get_group_status(_, message: Message):
     if len(message.command) != 2:
         await message.reply("Please provide a group username. Example: `/groupinfo YourGroupUsername`")
