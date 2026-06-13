@@ -98,9 +98,6 @@ async def get_thumb(videoid: str) -> str:
     
     dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
     bg = Image.alpha_composite(bg, dark)
-    
-    shadow = shadow.filter(ImageFilter.GaussianBlur(15))
-    bg = Image.alpha_composite(bg, shadow)
 
     # Frosted glass panel
     panel = bg.crop(
@@ -158,6 +155,10 @@ async def get_thumb(videoid: str) -> str:
         radius=32,
         fill=(0,0,0,120)
     )
+    
+    shadow = shadow.filter(ImageFilter.GaussianBlur(15))
+    bg = Image.alpha_composite(bg, shadow)
+    
     bg.paste(thumb, (THUMB_X, THUMB_Y), tmask)
 
     draw.text((TITLE_X, TITLE_Y), trim_to_width(title, title_font, MAX_TITLE_WIDTH), fill="white", font=title_font)
@@ -194,8 +195,6 @@ async def get_thumb(videoid: str) -> str:
     icons_path = "AxiomMuzic/assets/assets/play_icons.png"
     if os.path.isfile(icons_path):
         ic = Image.open(icons_path).resize((ICONS_W, ICONS_H)).convert("RGBA")
-        r, g, b, a = ic.split()
-        black_ic = Image.merge("RGBA", (r.point(lambda *_: 0), g.point(lambda *_: 0), b.point(lambda *_: 0), a))
         bg.paste(ic, (ICONS_X, ICONS_Y), ic)
 
     # Cleanup and save
