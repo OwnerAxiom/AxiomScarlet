@@ -63,6 +63,42 @@ TOGGLE_COMMAND_RE = re.compile(
     re.IGNORECASE,
 )
 
+def toggle_command_filter(_, __, message):
+    text = message.text or message.caption or ""
+    return bool(TOGGLE_COMMAND_RE.match(text))
+
+
+def toggle_state_from_message(message: Message):
+    text = message.text or message.caption or ""
+    match = TOGGLE_COMMAND_RE.match(text)
+    if not match:
+        return None, None
+    return match.group("command").lower(), (match.group("state") or "").lower() or None
+
+
+async def can_toggle_feature(chat_id: int, user_id: int) -> bool:
+    try:
+        if user_id in SUDOERS:
+            return True
+    except Exception:
+        pass
+    try:
+        member = await app.get_chat_member(chat_id, user_id)
+    except Exception:
+        return True
+    if member.status == ChatMemberStatus.OWNER:
+        return True
+    privileges = getattr(member, "privileges", None)
+    return bool(
+        member.status == ChatMemberStatus.ADMINISTRATOR
+        and privileges
+        and (
+            getattr(privileges, "can_manage_video_chats", False)
+            or getattr(privileges, "can_manage_chat", False)
+        )
+    )
+
+
 def feature_markup(feature: str, status: bool):
     callback_prefix = "autoplay_toggle" if feature == "autoplay" else "thumbnail_toggle"
     toggle_text = "ᴛᴜʀɴ ᴏғғ ❌" if status else "ᴛᴜʀɴ ᴏɴ ✅"
