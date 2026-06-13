@@ -38,10 +38,13 @@ from AxiomMuzic.utils.database import (
     is_autoplay,
     is_nonadmin_chat,
     is_skipmode,
+    is_thumbmode,
     remove_nonadmin_chat,
     set_playmode,
     set_playtype,
     set_upvotes,
+    thumb_off,
+    thumb_on,
     skip_off,
     skip_on,
 )
