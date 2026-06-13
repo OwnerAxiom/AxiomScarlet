@@ -23,15 +23,15 @@ from config import YOUTUBE_IMG_URL
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-PANEL_W, PANEL_H = 920, 430
+PANEL_W, PANEL_H = 880, 390
 PANEL_X = (1280 - PANEL_W) // 2
 PANEL_Y = 145
 
-THUMB_W, THUMB_H = 310, 310
+THUMB_W, THUMB_H = 280, 280
 THUMB_X = PANEL_X + 35
 THUMB_Y = PANEL_Y + 60
 
-TITLE_X = THUMB_X + THUMB_W + 40
+TITLE_X = THUMB_X + THUMB_W + 30
 TITLE_Y = THUMB_Y + 20
 
 META_X = TITLE_X
@@ -46,7 +46,7 @@ ICONS_W, ICONS_H = 320, 38
 ICONS_X = TITLE_X + 40
 ICONS_Y = BAR_Y + 70
 
-MAX_TITLE_WIDTH = 580
+MAX_TITLE_WIDTH = 420
 
 def trim_to_width(text: str, font: ImageFont.FreeTypeFont, max_w: int) -> str:
     ellipsis = "…"
@@ -94,10 +94,13 @@ async def get_thumb(videoid: str) -> str:
     # Create base image
     base = Image.open(thumb_path).resize((1280, 720)).convert("RGBA")
     
-    bg = base.filter(ImageFilter.GaussianBlur(22))
+    bg = base.filter(ImageFilter.GaussianBlur(12))
     
-    dark = Image.new("RGBA", bg.size, (0, 0, 0, 120))
+    dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
     bg = Image.alpha_composite(bg, dark)
+    
+    shadow = shadow.filter(ImageFilter.GaussianBlur(15))
+    bg = Image.alpha_composite(bg, shadow)
 
     # Frosted glass panel
     panel = bg.crop(
@@ -109,12 +112,12 @@ async def get_thumb(videoid: str) -> str:
         )
     )
     
-    panel = panel.filter(ImageFilter.GaussianBlur(8))
+    panel = panel.filter(ImageFilter.GaussianBlur(3))
     
     glass = Image.new(
         "RGBA",
         (PANEL_W, PANEL_H),
-        (20, 20, 20, 120),
+        (15, 15, 15, 85),
     )
     
     panel = Image.alpha_composite(panel, glass)
@@ -129,51 +132,10 @@ async def get_thumb(videoid: str) -> str:
     
     bg.paste(panel, (PANEL_X, PANEL_Y), mask)
 
-    # RGB Border Added....
-    rgb = ImageDraw.Draw(bg)
-    
-    colors = [
-        (0, 180, 255),
-        (0, 255, 120),
-        (255, 220, 0),
-        (255, 0, 180),
-    ]
-    
-    for i in range(4):
-        rgb.rounded_rectangle(
-            (
-                PANEL_X - i,
-                PANEL_Y - i,
-                PANEL_X + PANEL_W + i,
-                PANEL_Y + PANEL_H + i,
-            ),
-            radius=35,
-            outline=colors[i],
-            width=3,
-        )
-
-    #Added Glow Effects
-    glow = Image.new("RGBA", bg.size, (0,0,0,0))
-    gdraw = ImageDraw.Draw(glow)
-    
-    gdraw.rounded_rectangle(
-        (
-            PANEL_X-8,
-            PANEL_Y-8,
-            PANEL_X+PANEL_W+8,
-            PANEL_Y+PANEL_H+8
-        ),
-        radius=40,
-        outline=(0,255,180,80),
-        width=10
-    )
-    
-    glow = glow.filter(ImageFilter.GaussianBlur(12))
-    bg = Image.alpha_composite(bg, glow)
     # Draw details
     draw = ImageDraw.Draw(bg)
     try:
-        title_font = ImageFont.truetype("AxiomMuzic/assets/assets/font2.ttf", 42)
+        title_font = ImageFont.truetype("AxiomMuzic/assets/assets/font2.ttf", 36)
         regular_font = ImageFont.truetype("AxiomMuzic/assets/assets/font.ttf", 22)
     except OSError:
         title_font = regular_font = ImageFont.load_default()
@@ -182,6 +144,20 @@ async def get_thumb(videoid: str) -> str:
     thumb = thumb.resize((THUMB_W, THUMB_H), Image.LANCZOS)
     tmask = Image.new("L", thumb.size, 0)
     ImageDraw.Draw(tmask).rounded_rectangle((0, 0, THUMB_W, THUMB_H), 28, fill=255)
+    #thumbnail shadow added
+    shadow = Image.new("RGBA", bg.size, (0,0,0,0))
+    sdraw = ImageDraw.Draw(shadow)
+    
+    sdraw.rounded_rectangle(
+        (
+            THUMB_X-6,
+            THUMB_Y-6,
+            THUMB_X+THUMB_W+6,
+            THUMB_Y+THUMB_H+6
+        ),
+        radius=32,
+        fill=(0,0,0,120)
+    )
     bg.paste(thumb, (THUMB_X, THUMB_Y), tmask)
 
     draw.text((TITLE_X, TITLE_Y), trim_to_width(title, title_font, MAX_TITLE_WIDTH), fill="white", font=title_font)
@@ -212,7 +188,7 @@ async def get_thumb(videoid: str) -> str:
 
     draw.text((BAR_X, BAR_Y + 15), "01:13", fill="white", font=regular_font)
     end_text = "Live" if is_live else duration_text
-    draw.text((BAR_X + BAR_TOTAL_LEN - (90 if is_live else 60), BAR_Y + 15), end_text, fill=(255,80,80) if is_live else "white", font=regular_font)
+    draw.text((BAR_X + BAR_TOTAL_LEN - (90 if is_live else 30), BAR_Y + 15), end_text, fill=(255,80,80) if is_live else "white", font=regular_font)
 
     # Icons
     icons_path = "AxiomMuzic/assets/assets/play_icons.png"
@@ -228,5 +204,5 @@ async def get_thumb(videoid: str) -> str:
     except OSError:
         pass
 
-    bg.save(cache_path, quality=100)
+    bg.save(cache_path)
     return cache_path
