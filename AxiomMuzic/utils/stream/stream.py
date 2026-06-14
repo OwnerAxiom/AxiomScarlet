@@ -19,7 +19,7 @@ import config
 from AxiomMuzic import Carbon, YouTube, app
 from AxiomMuzic.core.call import Axiom
 from AxiomMuzic.misc import db
-from AxiomMuzic.utils.database import add_active_video_chat, is_active_chat
+from AxiomMuzic.utils.database import add_active_video_chat, is_active_chat, is_thumbmode
 from AxiomMuzic.utils.exceptions import AssistantErr
 from AxiomMuzic.utils.inline import aq_markup, close_markup, stream_markup
 from AxiomMuzic.utils.pastebin import AxiomBin
