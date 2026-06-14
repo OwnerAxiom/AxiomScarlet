@@ -29,6 +29,7 @@ from AxiomMuzic.utils.database import (
     get_lang,
     get_loop,
     is_autoplay,
+    is_thumbmode,
     group_assistant,
     is_autoend,
     music_on,
