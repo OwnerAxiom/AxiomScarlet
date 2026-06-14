@@ -42,7 +42,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
     try:
         candidates = []
         if seed_video_id and seed_video_id not in ["telegram", "soundcloud"]:
-            for _ in range(limit):
+            for _ in range(limit * 2):
                 try:
                     related = await YouTube.related_video(seed_video_id, original_chat_id)
                 except Exception as exc:
@@ -50,6 +50,8 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                     related = None
                 if related and related.get("id"):
                     candidates.append(related)
+                    if len(candidates) >= limit:
+                        break
 
         for query in queries:
             if len(candidates) >= limit * 2:
