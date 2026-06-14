@@ -17,6 +17,8 @@ aiofiles
 aiohttp
 apscheduler
 asyncio
+flask
+requests
 bard 
 beautifulsoup4
 bs4
