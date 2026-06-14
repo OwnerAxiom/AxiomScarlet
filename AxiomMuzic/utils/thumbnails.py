@@ -37,7 +37,7 @@ BAR_HEIGHT = 5
 
 PILL_W = 360
 PILL_H = 85
-PILL_RADIUS = 42
+PILL_RADIUS = 40
 PILL_X = TITLE_X + 150  # Controls ko right shift
 PILL_Y = BAR_Y + 45
 
