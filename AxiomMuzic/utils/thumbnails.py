@@ -232,7 +232,7 @@ async def get_thumb(videoid: str) -> str:
         card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
         card_area = card_area.filter(ImageFilter.GaussianBlur(14))  # Zyada blur
         # LIGHT frosted glass - WHITE transparent
-        frosted = Image.new("RGBA", (CARD_W, CARD_H), (15, 15, 20, 100))
+        frosted = Image.new("RGBA", (CARD_W, CARD_H), (240, 240, 245, 80))
         card = Image.alpha_composite(card_area, frosted)
 
         mask = Image.new("L", (CARD_W, CARD_H), 0)
