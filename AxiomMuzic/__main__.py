@@ -165,7 +165,7 @@ async def init():
     await Axiom.decorators()
 
     LOGGER("AxiomMuzic").info(
-        "╔═════ஜ۩۞۩ஜ════╗\n"
+        "\n╔═════ஜ۩۞۩ஜ════╗\n"
         "  ☠ MADE BY MAANAV\n"
         "╚═════ஜ۩۞۩ஜ════╝"
     )
