@@ -1,7 +1,7 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Perfect Thumbnail Generator
+# 🔸 AxiomMusic Project - Premium Thumbnail Generator
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
-# 📅 Copyright © 2026 – All Rights Reserved
+#  Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
 
 import os
@@ -15,7 +15,7 @@ from config import YOUTUBE_IMG_URL
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-# Panel dimensions - EXACT from sample
+# Panel dimensions
 PANEL_W, PANEL_H = 920, 440
 PANEL_X = (1280 - PANEL_W) // 2
 PANEL_Y = 140
@@ -28,7 +28,7 @@ THUMB_Y = PANEL_Y + 60
 THUMB_RADIUS = 28
 
 # Text positions
-TITLE_X = THUMB_X + THUMB_SIZE + 50
+TITLE_X = THUMB_X + THUMB_SIZE + 55
 TITLE_Y = THUMB_Y + 35
 META_Y = TITLE_Y + 50
 
@@ -54,8 +54,92 @@ def trim_text(text: str, font: ImageFont.FreeTypeFont, max_width: int) -> str:
             return trimmed
     return ellipsis
 
+def create_curved_glow(size, colors, radius, blur_amount, spread=25):
+    """Create a PROPERLY CURVED glow border with rounded corners"""
+    width, height = size
+    # Make canvas bigger to fit glow
+    canvas_size = (width + spread * 2, height + spread * 2)
+    img = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    
+    # Draw multiple rounded rectangles with increasing radius
+    for i, color in enumerate(colors):
+        offset = i * 4
+        alpha = 200 - (i * 40)
+        if alpha < 80:
+            alpha = 80
+        
+        # Each layer has properly curved corners
+        layer_radius = radius + offset + 5
+        draw.rounded_rectangle(
+            (offset, offset, canvas_size[0] - offset, canvas_size[1] - offset),
+            radius=layer_radius,
+            outline=color + (alpha,),
+            width=6
+        )
+    
+    # Blur for smooth glow
+    return img.filter(ImageFilter.GaussianBlur(blur_amount))
+
+def draw_icon_shuffle(draw, x, y, color):
+    """Draw shuffle icon properly"""
+    # Two crossing arrows
+    draw.line([(x, y+14), (x+10, y+4)], fill=color, width=2)
+    draw.polygon([(x+10, y+2), (x+14, y+4), (x+10, y+6)], fill=color)
+    draw.line([(x, y+14), (x+10, y+24)], fill=color, width=2)
+    draw.polygon([(x+10, y+22), (x+14, y+24), (x+10, y+26)], fill=color)
+    draw.line([(x+8, y+4), (x+20, y+4)], fill=color, width=2)
+    draw.line([(x+8, y+24), (x+20, y+24)], fill=color, width=2)
+
+def draw_icon_repeat(draw, x, y, color):
+    """Draw repeat icon properly"""
+    # Curved arrow forming a loop
+    draw.arc([(x, y+2), (x+22, y+26)], 90, 360, fill=color, width=2)
+    # Arrow head at top
+    draw.polygon([(x+18, y), (x+24, y+2), (x+20, y+6)], fill=color)
+
+def draw_icon_prev(draw, x, y, color):
+    """Draw previous icon"""
+    # Triangle pointing left
+    draw.polygon([(x+16, y+4), (x+16, y+24), (x, y+14)], fill=color)
+    # Vertical bar
+    draw.rectangle([(x+18, y+2), (x+22, y+26)], fill=color)
+
+def draw_icon_play(draw, x, y, color):
+    """Draw play icon"""
+    draw.polygon([(x, y+2), (x, y+26), (x+22, y+14)], fill=color)
+
+def draw_icon_pause(draw, x, y, color):
+    """Draw pause icon - two vertical bars"""
+    draw.rectangle([(x, y+2), (x+8, y+26)], fill=color)
+    draw.rectangle([(x+14, y+2), (x+22, y+26)], fill=color)
+
+def draw_icon_next(draw, x, y, color):
+    """Draw next icon"""
+    # Vertical bar
+    draw.rectangle([(x, y+2), (x+4, y+26)], fill=color)
+    # Triangle pointing right
+    draw.polygon([(x+6, y+4), (x+6, y+24), (x+22, y+14)], fill=color)
+
+def draw_icon_heart(draw, x, y, color):
+    """Draw heart icon properly"""
+    # Two circles for top lobes
+    draw.ellipse([(x+2, y+4), (x+12, y+14)], fill=color)
+    draw.ellipse([(x+10, y+4), (x+20, y+14)], fill=color)
+    # Bottom triangle
+    draw.polygon([(x+2, y+10), (x+20, y+10), (x+11, y+22)], fill=color)
+
+def draw_icon_headphones(draw, x, y, color):
+    """Draw headphones icon properly"""
+    # Headband arc
+    draw.arc([(x+2, y), (x+22, y+18)], 180, 0, fill=color, width=2)
+    # Left ear cup
+    draw.rounded_rectangle([(x, y+14), (x+8, y+26)], radius=2, fill=color)
+    # Right ear cup
+    draw.rounded_rectangle([(x+16, y+14), (x+24, y+26)], radius=2, fill=color)
+
 async def get_thumb(videoid: str) -> str:
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_perfect.png")
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_premium.png")
     
     if os.path.exists(cache_path):
         return cache_path
@@ -101,27 +185,30 @@ async def get_thumb(videoid: str) -> str:
         base_thumb = Image.open(thumb_path).convert("RGBA")
         base_thumb = base_thumb.resize((1280, 720), Image.LANCZOS)
         
-        # BRIGHTNESS - Make it brighter like sample
+        # HIGH BRIGHTNESS - Make it bright like sample
         enhancer = ImageEnhance.Brightness(base_thumb)
-        base_thumb = enhancer.enhance(1.35)
+        base_thumb = enhancer.enhance(1.45)  # 45% brighter
         
         enhancer = ImageEnhance.Contrast(base_thumb)
-        base_thumb = enhancer.enhance(1.15)
+        base_thumb = enhancer.enhance(1.25)
         
-        # Blur background
-        bg = base_thumb.filter(ImageFilter.GaussianBlur(18))
+        enhancer = ImageEnhance.Color(base_thumb)
+        base_thumb = enhancer.enhance(1.3)  # More vibrant colors
         
-        # Dark overlay
-        dark_overlay = Image.new("RGBA", bg.size, (0, 0, 0, 75))
+        # Blur background heavily
+        bg = base_thumb.filter(ImageFilter.GaussianBlur(20))
+        
+        # Lighter dark overlay for brightness
+        dark_overlay = Image.new("RGBA", bg.size, (0, 0, 0, 60))
         bg = Image.alpha_composite(bg, dark_overlay)
         
         # Create panel area
         panel_area = bg.crop((PANEL_X, PANEL_Y, PANEL_X + PANEL_W, PANEL_Y + PANEL_H))
         
-        # Frosted glass effect - SUBTLE like sample
-        frosted = Image.new("RGBA", (PANEL_W, PANEL_H), (15, 15, 15, 45))
+        # Frosted glass effect
+        frosted = Image.new("RGBA", (PANEL_W, PANEL_H), (20, 20, 25, 55))
         panel = Image.alpha_composite(panel_area, frosted)
-        panel = panel.filter(ImageFilter.GaussianBlur(1.5))
+        panel = panel.filter(ImageFilter.GaussianBlur(1))
         
         # Rounded mask
         mask = Image.new("L", (PANEL_W, PANEL_H), 0)
@@ -130,50 +217,33 @@ async def get_thumb(videoid: str) -> str:
         
         bg.paste(panel, (PANEL_X, PANEL_Y), mask)
         
-        # MULTI-COLOR GRADIENT BORDER - EXACT like sample
-        # Colors: Blue -> Green -> Pink/Purple gradient
-        border_colors = [
-            (40, 100, 255),    # Blue
-            (40, 220, 120),    # Green
-            (200, 80, 200),    # Purple/Pink
-            (255, 120, 100),   # Orange-Pink
+        # CARD GLOW - PROPERLY CURVED with multi-color gradient
+        card_glow_colors = [
+            (60, 140, 255),    # Blue
+            (60, 240, 160),    # Green
+            (200, 100, 240),   # Purple
+            (255, 120, 160),   # Pink
         ]
         
-        # Create glowing border
-        border_size = (PANEL_W + 60, PANEL_H + 60)
-        border_img = Image.new("RGBA", border_size, (0, 0, 0, 0))
-        border_draw = ImageDraw.Draw(border_img)
+        card_glow = create_curved_glow(
+            (PANEL_W, PANEL_H),
+            card_glow_colors,
+            radius=PANEL_RADIUS,
+            blur_amount=35,
+            spread=30
+        )
+        bg.paste(card_glow, (PANEL_X - 30, PANEL_Y - 30), card_glow)
         
-        # Multiple layers for smooth glow
-        for i, color in enumerate(border_colors):
-            offset = i * 5
-            alpha = 220 - (i * 45)
-            if alpha < 100:
-                alpha = 100
-            
-            border_draw.rounded_rectangle(
-                (offset, offset, border_size[0] - offset, border_size[1] - offset),
-                radius=PANEL_RADIUS + offset + 8,
-                outline=color + (alpha,),
-                width=7
-            )
-        
-        # Blur for glow effect
-        border_img = border_img.filter(ImageFilter.GaussianBlur(32))
-        
-        # Paste border
-        bg.paste(border_img, (PANEL_X - 30, PANEL_Y - 30), border_img)
-        
-        # Inner border (sharp)
-        inner_border = Image.new("RGBA", (PANEL_W + 8, PANEL_H + 8), (0, 0, 0, 0))
+        # Inner subtle border on card
+        inner_border = Image.new("RGBA", (PANEL_W, PANEL_H), (0, 0, 0, 0))
         ib_draw = ImageDraw.Draw(inner_border)
         ib_draw.rounded_rectangle(
-            (0, 0, PANEL_W + 8, PANEL_H + 8),
-            radius=PANEL_RADIUS + 4,
-            outline=(255, 255, 255, 40),
-            width=2
+            (4, 4, PANEL_W - 4, PANEL_H - 4),
+            radius=PANEL_RADIUS - 2,
+            outline=(255, 255, 255, 30),
+            width=1
         )
-        bg.paste(inner_border, (PANEL_X - 4, PANEL_Y - 4), inner_border)
+        bg.paste(inner_border, (PANEL_X, PANEL_Y), inner_border)
         
         # Process thumbnail
         thumb_img = Image.open(thumb_path).convert("RGBA")
@@ -181,7 +251,7 @@ async def get_thumb(videoid: str) -> str:
         
         # Brightness for thumb
         enhancer = ImageEnhance.Brightness(thumb_img)
-        thumb_img = enhancer.enhance(1.2)
+        thumb_img = enhancer.enhance(1.25)
         
         # Thumbnail mask
         thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
@@ -192,37 +262,29 @@ async def get_thumb(videoid: str) -> str:
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow)
         shadow_draw.rounded_rectangle(
-            (THUMB_X - 5, THUMB_Y - 5, 
-             THUMB_X + THUMB_SIZE + 5, THUMB_Y + THUMB_SIZE + 5),
-            radius=THUMB_RADIUS + 6,
-            fill=(0, 0, 0, 120)
+            (THUMB_X - 6, THUMB_Y - 6, 
+             THUMB_X + THUMB_SIZE + 6, THUMB_Y + THUMB_SIZE + 6),
+            radius=THUMB_RADIUS + 8,
+            fill=(0, 0, 0, 130)
         )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(15))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(18))
         bg = Image.alpha_composite(bg, shadow)
         
-        # Thumbnail glow border - MULTI COLOR
-        thumb_border_size = (THUMB_SIZE + 30, THUMB_SIZE + 30)
-        thumb_border = Image.new("RGBA", thumb_border_size, (0, 0, 0, 0))
-        tb_draw = ImageDraw.Draw(thumb_border)
-        
-        thumb_colors = [
-            (60, 120, 255),    # Blue
-            (60, 230, 130),    # Green
-            (180, 100, 220),   # Purple
+        # THUMBNAIL GLOW - Same multi-color gradient as card
+        thumb_glow_colors = [
+            (60, 140, 255),    # Blue
+            (60, 240, 160),    # Green
+            (200, 100, 240),   # Purple
         ]
         
-        for i, color in enumerate(thumb_colors):
-            offset = i * 4
-            alpha = 200 - (i * 50)
-            tb_draw.rounded_rectangle(
-                (offset, offset, thumb_border_size[0] - offset, thumb_border_size[1] - offset),
-                radius=THUMB_RADIUS + offset + 5,
-                outline=color + (alpha,),
-                width=5
-            )
-        
-        thumb_border = thumb_border.filter(ImageFilter.GaussianBlur(22))
-        bg.paste(thumb_border, (THUMB_X - 15, THUMB_Y - 15), thumb_border)
+        thumb_glow = create_curved_glow(
+            (THUMB_SIZE, THUMB_SIZE),
+            thumb_glow_colors,
+            radius=THUMB_RADIUS,
+            blur_amount=28,
+            spread=22
+        )
+        bg.paste(thumb_glow, (THUMB_X - 22, THUMB_Y - 22), thumb_glow)
         
         # Paste thumbnail
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
@@ -240,7 +302,7 @@ async def get_thumb(videoid: str) -> str:
             meta_font = title_font
             time_font = title_font
         
-        # Title - UPPERCASE like sample
+        # Title
         trimmed_title = trim_text(title.upper(), title_font, MAX_TITLE_WIDTH)
         draw.text((TITLE_X, TITLE_Y), trimmed_title, fill="white", font=title_font)
         
@@ -251,18 +313,18 @@ async def get_thumb(videoid: str) -> str:
         bar_end_x = BAR_X + BAR_WIDTH
         progress_width = int(BAR_WIDTH * 0.35)
         
-        # Bar background - gray
+        # Bar background
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end_x, BAR_Y + BAR_HEIGHT)],
             radius=3,
-            fill=(90, 90, 90)
+            fill=(100, 100, 100)
         )
         
-        # Progress - BRIGHT GREEN like sample
+        # Progress - bright green
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress_width, BAR_Y + BAR_HEIGHT)],
             radius=3,
-            fill=(80, 240, 100)
+            fill=(80, 245, 110)
         )
         
         # Circle indicator
@@ -275,57 +337,37 @@ async def get_thumb(videoid: str) -> str:
         
         # Times
         current_time = "01:58"
-        total_time = duration_text if not is_live else "4:49"
+        total_time = duration_text if not is_live else "2:16"
         
         draw.text((BAR_X, BAR_Y + 22), current_time, fill="white", font=time_font)
         draw.text((bar_end_x - 40, BAR_Y + 22), total_time, fill="white", font=time_font)
         
-        # CONTROL ICONS - EXACT like sample
+        # CONTROL ICONS - PROPERLY DRAWN AND SPACED
         icon_y = ICONS_Y
-        icon_spacing = 35
+        icon_size = 24
+        icon_gap = 32
         start_x = ICONS_X
         
-        # 1. Shuffle icon - GREEN/CYAN
-        shuffle_x = start_x
-        draw.line([(shuffle_x, icon_y+12), (shuffle_x+8, icon_y+4)], fill=(80, 255, 150), width=2)
-        draw.line([(shuffle_x+8, icon_y+4), (shuffle_x+18, icon_y+4)], fill=(80, 255, 150), width=2)
-        draw.line([(shuffle_x, icon_y+16), (shuffle_x+8, icon_y+24)], fill=(80, 255, 150), width=2)
-        draw.line([(shuffle_x+8, icon_y+24), (shuffle_x+18, icon_y+24)], fill=(80, 255, 150), width=2)
-        draw.line([(shuffle_x+6, icon_y+20), (shuffle_x+14, icon_y+12)], fill=(80, 255, 150), width=2)
+        # 1. Shuffle - GREEN
+        draw_icon_shuffle(draw, start_x, icon_y, (80, 255, 150))
         
-        # 2. Repeat icon - ORANGE/YELLOW
-        repeat_x = start_x + icon_spacing
-        draw.arc([(repeat_x, icon_y+2), (repeat_x+24, icon_y+26)], 0, 270, fill=(255, 200, 80), width=2)
-        draw.polygon([(repeat_x+16, icon_y), (repeat_x+24, icon_y), (repeat_x+24, icon_y+8)], fill=(255, 200, 80))
-        draw.line([(repeat_x+18, icon_y+18), (repeat_x+26, icon_y+18)], fill=(255, 200, 80), width=2)
-        draw.polygon([(repeat_x+26, icon_y+14), (repeat_x+26, icon_y+22), (repeat_x+18, icon_y+18)], fill=(255, 200, 80))
+        # 2. Repeat - ORANGE/YELLOW
+        draw_icon_repeat(draw, start_x + icon_gap, icon_y, (255, 210, 80))
         
-        # 3. Previous icon - WHITE
-        prev_x = start_x + icon_spacing * 2
-        draw.polygon([(prev_x, icon_y+4), (prev_x, icon_y+24), (prev_x+20, icon_y+14)], fill="white")
-        draw.rectangle([(prev_x+22, icon_y+2), (prev_x+26, icon_y+26)], fill="white")
+        # 3. Previous - WHITE
+        draw_icon_prev(draw, start_x + icon_gap * 2, icon_y, "white")
         
-        # 4. Pause icon - WHITE (2 vertical bars)
-        pause_x = start_x + icon_spacing * 3
-        draw.rectangle([(pause_x, icon_y+2), (pause_x+8, icon_y+26)], fill="white")
-        draw.rectangle([(pause_x+16, icon_y+2), (pause_x+24, icon_y+26)], fill="white")
+        # 4. Pause - WHITE (two bars)
+        draw_icon_pause(draw, start_x + icon_gap * 3, icon_y, "white")
         
-        # 5. Next icon - WHITE
-        next_x = start_x + icon_spacing * 4
-        draw.rectangle([(next_x, icon_y+2), (next_x+4, icon_y+26)], fill="white")
-        draw.polygon([(next_x+6, icon_y+4), (next_x+6, icon_y+24), (next_x+26, icon_y+14)], fill="white")
+        # 5. Next - WHITE
+        draw_icon_next(draw, start_x + icon_gap * 4, icon_y, "white")
         
-        # 6. Heart icon - RED
-        heart_x = start_x + icon_spacing * 5 + 5
-        draw.ellipse([(heart_x, icon_y+8), (heart_x+10, icon_y+18)], fill=(255, 70, 70))
-        draw.ellipse([(heart_x+8, icon_y+8), (heart_x+18, icon_y+18)], fill=(255, 70, 70))
-        draw.polygon([(heart_x+2, icon_y+13), (heart_x+16, icon_y+13), (heart_x+9, icon_y+24)], fill=(255, 70, 70))
+        # 6. Heart - RED
+        draw_icon_heart(draw, start_x + icon_gap * 5 + 5, icon_y, (255, 70, 70))
         
-        # 7. Headphones icon - WHITE
-        hp_x = start_x + icon_spacing * 6 + 10
-        draw.arc([(hp_x, icon_y+4), (hp_x+22, icon_y+20)], 180, 0, fill="white", width=3)
-        draw.ellipse([(hp_x, icon_y+18), (hp_x+9, icon_y+27)], fill="white")
-        draw.ellipse([(hp_x+13, icon_y+18), (hp_x+22, icon_y+27)], fill="white")
+        # 7. Headphones - WHITE
+        draw_icon_headphones(draw, start_x + icon_gap * 6 + 10, icon_y, "white")
         
         # Save
         bg = bg.convert("RGB")
@@ -343,3 +385,4 @@ async def get_thumb(videoid: str) -> str:
             pass
 
     return cache_path
+    
