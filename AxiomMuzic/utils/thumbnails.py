@@ -1,5 +1,5 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - PERFECT Sanam Re Style
+# 🔸 AxiomMusic Project - PERFECT Rainbow Glow
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
 # 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
@@ -23,23 +23,20 @@ CARD_RADIUS = 55
 
 THUMB_SIZE = 320
 THUMB_X = CARD_X + 55
-THUMB_Y = CARD_Y + 65  # Centered vertically
+THUMB_Y = CARD_Y + 65
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
-TITLE_Y = CARD_Y + 75
-META_Y = TITLE_Y + 65
+TITLE_Y = CARD_Y + 85
+META_Y = TITLE_Y + 50
 
-BAR_Y = META_Y + 65
+BAR_Y = META_Y + 60
 BAR_X = TITLE_X
 BAR_WIDTH = 510
 BAR_HEIGHT = 5
 
-PILL_W = 360
-PILL_H = 85
-PILL_RADIUS = 40
-PILL_X = TITLE_X + 120  # Controls ko right shift
-PILL_Y = BAR_Y + 45
+CONTROLS_Y = BAR_Y + 50
+CONTROLS_X = TITLE_X
 
 MAX_TITLE_WIDTH = 520
 
@@ -56,30 +53,28 @@ def trim_text(text, font, max_width):
         return text[:50] + "..."
 
 
-def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
-    """THICK RAINBOW NEON GLOW - Pink→Purple→Blue→Cyan→Green→Yellow→Orange"""
+def create_rainbow_glow(size, radius, thickness=16, blur_amount=40):
+    """RAINBOW GLOW ONLY - No sharp outline"""
     try:
         w, h = size
-        pad = 120
+        pad = 100
         canvas = Image.new("RGBA", (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
         draw = ImageDraw.Draw(canvas)
 
-        # Rainbow colors clockwise
         colors = [
-            (255, 40, 120),   # Pink
-            (220, 40, 220),   # Magenta  
-            (140, 60, 255),   # Purple
-            (70, 120, 255),   # Blue
-            (40, 200, 255),   # Cyan
-            (50, 230, 170),   # Green-cyan
-            (140, 240, 60),   # Lime
-            (240, 210, 40),   # Yellow
-            (255, 150, 40),   # Orange
-            (255, 80, 60),    # Red-orange
-            (255, 40, 120),   # Back to pink
+            (60, 120, 255),
+            (60, 220, 180),
+            (140, 240, 100),
+            (220, 240, 60),
+            (255, 180, 80),
+            (255, 100, 120),
+            (240, 80, 180),
+            (160, 80, 240),
+            (100, 100, 255),
+            (60, 120, 255),
         ]
 
-        num_layers = thickness * 5
+        num_layers = thickness * 4
         for i in range(num_layers):
             t = i / num_layers
             idx = int(t * (len(colors) - 1))
@@ -90,16 +85,11 @@ def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
             g = int(c1[1] + (c2[1] - c1[1]) * frac)
             b = int(c1[2] + (c2[2] - c1[2]) * frac)
 
-            if i < num_layers // 3:
-                alpha = int(255 * (i / (num_layers // 3)))
-            elif i > num_layers * 2 // 3:
-                alpha = int(255 * (1 - (i - num_layers * 2 // 3) / (num_layers // 3)))
-            else:
-                alpha = 255
-            alpha = max(60, min(255, alpha))
+            alpha = 255 if i < num_layers * 0.7 else int(255 * (1 - (i - num_layers * 0.7) / (num_layers * 0.3)))
+            alpha = max(80, min(255, alpha))
 
-            offset = pad + i * 0.5
-            layer_r = radius + (thickness - i * 0.5)
+            offset = pad + i * 0.6
+            layer_r = radius + (thickness - i * 0.6)
             if layer_r < 5:
                 break
 
@@ -112,27 +102,11 @@ def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
             )
 
         glow = canvas.filter(ImageFilter.GaussianBlur(blur_amount))
+        return glow
 
-        # Sharp inner border
-        sharp = Image.new("RGBA", (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
-        sd = ImageDraw.Draw(sharp)
-        sharp_colors = [(255, 40, 120), (140, 60, 255), (40, 200, 255), (140, 240, 60), (255, 150, 40)]
-        for i in range(3):
-            c = sharp_colors[i * 2 % len(sharp_colors)]
-            offset = pad + thickness + i
-            sd.rounded_rectangle(
-                (int(offset), int(offset),
-                 int(w + pad * 2 - offset), int(h + pad * 2 - offset)),
-                radius=int(radius - i),
-                outline=c + (255,),
-                width=1
-            )
-
-        return glow, sharp
     except Exception as e:
         print(f"Glow error: {e}")
-        img = Image.new("RGBA", (size[0] + 240, size[1] + 240), (0, 0, 0, 0))
-        return img, img
+        return Image.new("RGBA", (size[0] + 200, size[1] + 200), (0, 0, 0, 0))
 
 
 # ===== ICONS =====
@@ -141,46 +115,56 @@ def icon_shuffle(draw, x, y, s, color):
     x, y, s = int(x), int(y), int(s)
     draw.line([(x, y + s//3), (x + s//2, y)], fill=color, width=2)
     draw.line([(x + s//4, y), (x + s*3//4, y)], fill=color, width=2)
-    draw.polygon([(x + s//2, y), (x + s//2 + 6, y + 4), (x + s//2, y + 8)], fill=color)
+    draw.polygon([(x + s//2, y), (x + s//2 + 5, y + 3), (x + s//2, y + 6)], fill=color)
     draw.line([(x, y + s*2//3), (x + s//2, y + s)], fill=color, width=2)
     draw.line([(x + s//4, y + s), (x + s*3//4, y + s)], fill=color, width=2)
-    draw.polygon([(x + s//2, y + s), (x + s//2 + 6, y + s - 4), (x + s//2, y + s - 8)], fill=color)
-
-
-def icon_prev(draw, x, y, s, color):
-    x, y, s = int(x), int(y), int(s)
-    draw.polygon([(x + s*3//4, y + 3), (x + s*3//4, y + s - 3), (x + 3, y + s//2)], fill=color)
-    draw.rectangle([(x + s*4//5, y + 3), (x + s - 2, y + s - 3)], fill=color)
-
-
-def icon_play(draw, x, y, s, circle, triangle):
-    x, y, s = int(x), int(y), int(s)
-    draw.ellipse([(x, y), (x + s, y + s)], fill=circle)
-    draw.polygon([
-        (x + s*2//5, y + s//4),
-        (x + s*2//5, y + s*3//4),
-        (x + s*3//4, y + s//2)
-    ], fill=triangle)
-
-
-def icon_next(draw, x, y, s, color):
-    x, y, s = int(x), int(y), int(s)
-    draw.rectangle([(x + 2, y + 3), (x + s//5, y + s - 3)], fill=color)
-    draw.polygon([(x + s//4, y + 3), (x + s//4, y + s - 3), (x + s - 3, y + s//2)], fill=color)
+    draw.polygon([(x + s//2, y + s), (x + s//2 + 5, y + s - 3), (x + s//2, y + s - 6)], fill=color)
 
 
 def icon_repeat(draw, x, y, s, color):
     x, y, s = int(x), int(y), int(s)
-    draw.arc([(x + 2, y + 2), (x + s - 2, y + s//2 + 2)], 180, 360, fill=color, width=2)
-    draw.polygon([(x + s - 6, y + 2), (x + s - 2, y + 2), (x + s - 6, y + 8)], fill=color)
-    draw.arc([(x + 2, y + s//2 - 2), (x + s - 2, y + s - 2)], 0, 180, fill=color, width=2)
-    draw.polygon([(x + 2, y + s - 2), (x + 6, y + s - 2), (x + 2, y + s - 8)], fill=color)
+    draw.arc([(x, y), (x + s, y + s//2)], 180, 360, fill=color, width=2)
+    draw.polygon([(x + s - 5, y), (x + s, y + 3), (x + s - 5, y + 6)], fill=color)
+    draw.arc([(x, y + s//2), (x + s, y + s)], 0, 180, fill=color, width=2)
+    draw.polygon([(x, y + s), (x + 5, y + s - 3), (x + 5, y + s - 6)], fill=color)
+
+
+def icon_prev(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.polygon([(x + s*3//4, y + 2), (x + s*3//4, y + s - 2), (x + 2, y + s//2)], fill=color)
+    draw.rectangle([(x + s*4//5, y + 2), (x + s - 1, y + s - 2)], fill=color)
+
+
+def icon_pause(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.rectangle([(x, y + 2), (x + s//3, y + s - 2)], fill=color)
+    draw.rectangle([(x + s*2//3, y + 2), (x + s, y + s - 2)], fill=color)
+
+
+def icon_next(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.rectangle([(x + 1, y + 2), (x + s//4, y + s - 2)], fill=color)
+    draw.polygon([(x + s//3, y + 2), (x + s//3, y + s - 2), (x + s - 2, y + s//2)], fill=color)
+
+
+def icon_heart(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.ellipse([(x + 2, y + 4), (x + s//2, y + s//2 + 2)], fill=color)
+    draw.ellipse([(x + s//2, y + 4), (x + s - 2, y + s//2 + 2)], fill=color)
+    draw.polygon([(x + 3, y + s//2), (x + s - 3, y + s//2), (x + s//2, y + s - 2)], fill=color)
+
+
+def icon_headphones(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.arc([(x + 3, y), (x + s - 3, y + s//2 + 5)], 180, 0, fill=color, width=2)
+    draw.ellipse([(x, y + s//2 + 2), (x + s//3, y + s - 2)], fill=color)
+    draw.ellipse([(x + s*2//3, y + s//2 + 2), (x + s, y + s - 2)], fill=color)
 
 
 # ===== MAIN =====
 
 async def get_thumb(videoid: str) -> str:
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_sanam.png")
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_final.png")
     if os.path.exists(cache_path):
         return cache_path
 
@@ -218,61 +202,56 @@ async def get_thumb(videoid: str) -> str:
         return YOUTUBE_IMG_URL
 
     try:
-        # === BACKGROUND: Bright + Kam blur ===
+        # === BACKGROUND ===
         base = Image.open(thumb_path).convert("RGBA")
         base = base.resize((1280, 720), Image.LANCZOS)
-        base = ImageEnhance.Brightness(base).enhance(1.4)
-        base = ImageEnhance.Contrast(base).enhance(1.2)
-        base = ImageEnhance.Color(base).enhance(1.25)
-        bg = base.filter(ImageFilter.GaussianBlur(6))  # Kam blur
-        dark = Image.new("RGBA", bg.size, (0, 0, 0, 50))
+        base = ImageEnhance.Brightness(base).enhance(1.35)
+        base = ImageEnhance.Contrast(base).enhance(1.15)
+        base = ImageEnhance.Color(base).enhance(1.2)
+        bg = base.filter(ImageFilter.GaussianBlur(8))
+        dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
         bg = Image.alpha_composite(bg, dark)
 
-        # === CARD: LIGHT/WHITE TRANSPARENT BLUR (Sanam Re style) ===
+        # === CARD: FULLY TRANSPARENT with HIGH BLUR (NO COLOR) ===
         card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
-        card_area = card_area.filter(ImageFilter.GaussianBlur(14))  # Zyada blur
-        # LIGHT frosted glass - WHITE transparent
-        frosted = Image.new("RGBA", (CARD_W, CARD_H), (240, 240, 245, 80))
-        card = Image.alpha_composite(card_area, frosted)
+        card_area = card_area.filter(ImageFilter.GaussianBlur(25))  # HIGH BLUR
+        card = card_area.convert("RGBA")  # Pure transparent, no color
 
         mask = Image.new("L", (CARD_W, CARD_H), 0)
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
         bg.paste(card, (CARD_X, CARD_Y), mask)
 
-        # === CARD RAINBOW GLOW ===
-        card_glow, card_sharp = create_rainbow_glow(
-            (CARD_W, CARD_H), CARD_RADIUS, thickness=18, blur_amount=45
+        # === CARD RAINBOW GLOW ONLY (NO RED OUTLINE) ===
+        card_glow = create_rainbow_glow(
+            (CARD_W, CARD_H), CARD_RADIUS, thickness=16, blur_amount=40
         )
-        bg.paste(card_glow, (CARD_X - 120, CARD_Y - 120), card_glow)
-        bg.paste(card_sharp, (CARD_X - 120, CARD_Y - 120), card_sharp)
+        bg.paste(card_glow, (CARD_X - 100, CARD_Y - 100), card_glow)
 
         # === THUMBNAIL ===
         thumb_img = Image.open(thumb_path).convert("RGBA")
         thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
-        thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.15)
+        thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
 
         thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
         ImageDraw.Draw(thumb_mask).rounded_rectangle(
             (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
 
-        # Shadow
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         sd = ImageDraw.Draw(shadow)
         sd.rounded_rectangle(
-            (THUMB_X - 10, THUMB_Y - 10,
-             THUMB_X + THUMB_SIZE + 10, THUMB_Y + THUMB_SIZE + 10),
-            radius=THUMB_RADIUS + 12, fill=(0, 0, 0, 130)
+            (THUMB_X - 8, THUMB_Y - 8,
+             THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
+            radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
         )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(18))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(16))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail rainbow glow
-        t_glow, t_sharp = create_rainbow_glow(
-            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=16, blur_amount=40
+        # Thumbnail rainbow glow ONLY (NO OUTLINE)
+        t_glow = create_rainbow_glow(
+            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=14, blur_amount=35
         )
-        bg.paste(t_glow, (THUMB_X - 120, THUMB_Y - 120), t_glow)
-        bg.paste(t_sharp, (THUMB_X - 120, THUMB_Y - 120), t_sharp)
+        bg.paste(t_glow, (THUMB_X - 100, THUMB_Y - 100), t_glow)
 
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
@@ -280,9 +259,9 @@ async def get_thumb(videoid: str) -> str:
         draw = ImageDraw.Draw(bg)
 
         try:
-            title_font = ImageFont.truetype("AxiomMuzic/assets/assets/font2.ttf", 42)
+            title_font = ImageFont.truetype("AxiomMuzic/assets/assets/font2.ttf", 40)
             meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/font.ttf", 22)
-            time_font = ImageFont.truetype("AxiomMuzic/assets/assets/font.ttf", 20)
+            time_font = ImageFont.truetype("AxiomMuzic/assets/assets/font.ttf", 19)
         except OSError:
             title_font = ImageFont.load_default()
             meta_font = title_font
@@ -290,53 +269,41 @@ async def get_thumb(videoid: str) -> str:
 
         trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
-        draw.text((TITLE_X, META_Y), f"{channel}  |  {views}",
-                  fill=(200, 200, 200), font=meta_font)
+        draw.text((TITLE_X, META_Y), channel, fill=(190, 190, 190), font=meta_font)
 
         # === PROGRESS BAR ===
         bar_end = BAR_X + BAR_WIDTH
-        progress = int(BAR_WIDTH * 0.30)
+        progress = int(BAR_WIDTH * 0.35)
 
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=3, fill=(90, 90, 90)
+            radius=3, fill=(85, 85, 85)
         )
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=3, fill=(60, 230, 110)
+            radius=3, fill=(90, 230, 80)
         )
 
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
-        draw.ellipse([(cx - 8, cy - 8), (cx + 8, cy + 8)], fill="white")
+        draw.ellipse([(cx - 7, cy - 7), (cx + 7, cy + 7)], fill="white")
 
-        draw.text((BAR_X, BAR_Y + 18), "01:13", fill="white", font=time_font)
-        total = duration_text if not is_live else "4:30"
-        draw.text((bar_end - 42, BAR_Y + 18), total, fill="white", font=time_font)
+        draw.text((BAR_X, BAR_Y + 17), "01:58", fill="white", font=time_font)
+        total = duration_text if not is_live else "4:49"
+        draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
-        # === CONTROL PILL (Right side, bigger) ===
-        pill = Image.new("RGBA", (PILL_W, PILL_H), (0, 0, 0, 0))
-        pd = ImageDraw.Draw(pill)
-        pd.rounded_rectangle((0, 0, PILL_W, PILL_H), radius=PILL_RADIUS,
-                             fill=(25, 25, 30, 220))
-        pd.rounded_rectangle((1, 1, PILL_W - 1, PILL_H - 1), radius=PILL_RADIUS - 1,
-                             outline=(60, 60, 70, 200), width=1)
-        bg.paste(pill, (PILL_X, PILL_Y), pill)
+        # === CONTROLS (NO PILL) ===
+        icon_y = CONTROLS_Y
+        icon_size = 24
+        sx = CONTROLS_X
+        gap = 42
 
-        # Icons - bigger
-        icon_y = PILL_Y + (PILL_H - 30) // 2
-        icon_size = 28
-        sx = PILL_X + 32
-        gap = 60
-
-        icon_shuffle(draw, sx, icon_y, icon_size, "white")
-        icon_prev(draw, sx + gap, icon_y, icon_size, "white")
-
-        play_size = 50
-        play_y = PILL_Y + (PILL_H - play_size) // 2
-        icon_play(draw, sx + gap * 2 + 4, play_y, play_size, "white", (20, 20, 25))
-
-        icon_next(draw, sx + gap * 3 + 8, icon_y, icon_size, "white")
-        icon_repeat(draw, sx + gap * 4 + 12, icon_y, icon_size, (60, 230, 110))
+        icon_shuffle(draw, sx, icon_y, icon_size, (80, 255, 140))
+        icon_repeat(draw, sx + gap, icon_y, icon_size, (255, 210, 70))
+        icon_prev(draw, sx + gap * 2, icon_y, icon_size, "white")
+        icon_pause(draw, sx + gap * 3, icon_y, icon_size, "white")
+        icon_next(draw, sx + gap * 4, icon_y, icon_size, "white")
+        icon_heart(draw, sx + gap * 5, icon_y, icon_size, (255, 70, 70))
+        icon_headphones(draw, sx + gap * 6, icon_y, icon_size, "white")
 
         # === SAVE ===
         bg = bg.convert("RGB")
