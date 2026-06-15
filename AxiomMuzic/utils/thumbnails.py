@@ -27,18 +27,18 @@ THUMB_Y = CARD_Y + 65
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
-TITLE_Y = CARD_Y + 85
-META_Y = TITLE_Y + 50
+TITLE_Y = CARD_Y + 80
+META_Y = TITLE_Y + 60
 
-# Bar - RIGHT SIDE (aligned with title)
-BAR_WIDTH = 510
+# Bar - RIGHT SIDE
+BAR_WIDTH = 500
 BAR_HEIGHT = 5
-BAR_X = TITLE_X  # RIGHT side
-BAR_Y = META_Y + 60
+BAR_X = TITLE_X
+BAR_Y = META_Y + 70
 
-# Controls - RIGHT SIDE
-CONTROLS_Y = BAR_Y + 50
-CONTROLS_X = TITLE_X
+# Controls - MORE RIGHT aur NICHE
+CONTROLS_Y = BAR_Y + 65  # Zyada niche
+CONTROLS_X = TITLE_X + 10  # Thoda right
 
 MAX_TITLE_WIDTH = 520
 
@@ -55,8 +55,8 @@ def trim_text(text, font, max_width):
         return text[:50] + "..."
 
 
-def create_rainbow_border_glow(size, radius, thickness=25, glow_size=80):
-    """STRONG VISIBLE RAINBOW GLOW on border"""
+def create_rainbow_border_glow(size, radius, thickness=40, glow_size=120):
+    """VERY STRONG VISIBLE RAINBOW GLOW"""
     try:
         w, h = size
         pad = glow_size
@@ -64,20 +64,20 @@ def create_rainbow_border_glow(size, radius, thickness=25, glow_size=80):
         draw = ImageDraw.Draw(canvas)
 
         colors = [
-            (255, 50, 130),   # Pink
-            (200, 50, 220),   # Magenta
-            (120, 60, 255),   # Purple
-            (60, 130, 255),   # Blue
-            (40, 220, 255),   # Cyan
-            (60, 240, 180),   # Green
-            (180, 240, 60),   # Lime
-            (255, 220, 50),   # Yellow
-            (255, 150, 50),   # Orange
-            (255, 80, 80),    # Red
-            (255, 50, 130),   # Back to pink
+            (255, 40, 120),
+            (220, 40, 220),
+            (140, 60, 255),
+            (70, 120, 255),
+            (40, 200, 255),
+            (50, 230, 170),
+            (140, 240, 60),
+            (240, 210, 40),
+            (255, 150, 40),
+            (255, 80, 60),
+            (255, 40, 120),
         ]
 
-        num_layers = 100
+        num_layers = 150
         for i in range(num_layers):
             t = i / num_layers
             idx = int(t * (len(colors) - 1))
@@ -88,7 +88,7 @@ def create_rainbow_border_glow(size, radius, thickness=25, glow_size=80):
             g = int(c1[1] + (c2[1] - c1[1]) * frac)
             b = int(c1[2] + (c2[2] - c1[2]) * frac)
 
-            alpha = 220
+            alpha = 255
 
             offset = pad + (i * thickness / num_layers)
             layer_r = radius + thickness - (i * thickness / num_layers)
@@ -100,15 +100,15 @@ def create_rainbow_border_glow(size, radius, thickness=25, glow_size=80):
                  int(w + pad * 2 - offset), int(h + pad * 2 - offset)),
                 radius=int(layer_r),
                 outline=(r, g, b, alpha),
-                width=4
+                width=6
             )
 
-        glow = canvas.filter(ImageFilter.GaussianBlur(15))
+        glow = canvas.filter(ImageFilter.GaussianBlur(5))
         return glow
 
     except Exception as e:
         print(f"Glow error: {e}")
-        return Image.new("RGBA", (size[0] + 200, size[1] + 200), (0, 0, 0, 0))
+        return Image.new("RGBA", (size[0] + 300, size[1] + 300), (0, 0, 0, 0))
 
 
 # ===== ICONS =====
@@ -223,11 +223,11 @@ async def get_thumb(videoid: str) -> str:
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
         bg.paste(card, (CARD_X, CARD_Y), mask)
 
-        # === CARD RAINBOW GLOW ON BORDER ===
+        # === CARD RAINBOW GLOW ON BORDER - STRONG ===
         card_glow = create_rainbow_border_glow(
-            (CARD_W, CARD_H), CARD_RADIUS, thickness=25, glow_size=80
+            (CARD_W, CARD_H), CARD_RADIUS, thickness=40, glow_size=120
         )
-        bg.paste(card_glow, (CARD_X - 80, CARD_Y - 80), card_glow)
+        bg.paste(card_glow, (CARD_X - 120, CARD_Y - 120), card_glow)
 
         # === THUMBNAIL ===
         thumb_img = Image.open(thumb_path).convert("RGBA")
@@ -249,11 +249,11 @@ async def get_thumb(videoid: str) -> str:
         shadow = shadow.filter(ImageFilter.GaussianBlur(16))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail rainbow glow
+        # Thumbnail rainbow glow - STRONG
         t_glow = create_rainbow_border_glow(
-            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=20, glow_size=60
+            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=30, glow_size=90
         )
-        bg.paste(t_glow, (THUMB_X - 60, THUMB_Y - 60), t_glow)
+        bg.paste(t_glow, (THUMB_X - 90, THUMB_Y - 90), t_glow)
 
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
@@ -273,7 +273,7 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
         draw.text((TITLE_X, META_Y), channel, fill=(190, 190, 190), font=meta_font)
 
-        # === PROGRESS BAR (RIGHT SIDE) ===
+        # === PROGRESS BAR ===
         bar_end = BAR_X + BAR_WIDTH
         progress = int(BAR_WIDTH * 0.35)
 
@@ -293,11 +293,11 @@ async def get_thumb(videoid: str) -> str:
         total = duration_text if not is_live else "2:16"
         draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
-        # === CONTROLS (RIGHT SIDE) ===
+        # === CONTROLS - RIGHT aur NICHE ===
         icon_y = CONTROLS_Y
-        icon_size = 24
+        icon_size = 26
         sx = CONTROLS_X
-        gap = 42
+        gap = 45
 
         icon_shuffle(draw, sx, icon_y, icon_size, (80, 255, 140))
         icon_repeat(draw, sx + gap, icon_y, icon_size, (255, 210, 70))
