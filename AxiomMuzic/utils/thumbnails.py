@@ -349,8 +349,8 @@ async def get_thumb(videoid: str) -> str:
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         draw.ellipse([(cx - 7, cy - 7), (cx + 7, cy + 7)], fill="white")
 
-        draw.text((BAR_X, BAR_Y + 17), "01:58", fill="white", font=time_font)
-        total = duration_text if not is_live else "2:16"
+        draw.text((BAR_X, BAR_Y + 17), "01:17", fill="white", font=time_font)
+        total = duration_text if not is_live else "3:46"
         draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
         # === CONTROLS (RIGHT + NICHE) ===
@@ -369,7 +369,7 @@ async def get_thumb(videoid: str) -> str:
 
         # === SAVE ===
         bg = bg.convert("RGB")
-        bg.save(cache_path, "PNG", quality=95)
+        bg.save(cache_path, "PNG", quality=99)
 
     except Exception as e:
         import traceback
