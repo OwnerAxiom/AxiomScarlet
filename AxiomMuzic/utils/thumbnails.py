@@ -1,6 +1,7 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Transparent Card with Glow
-# 🔹 Card: Transparent + High Blur, Border: Curved Glow
+# 🔸 AxiomMusic Project - Transparent Card + Dual Palette
+# 🔹 Card: Pure transparent + high blur
+# 🔹 Two different random palettes for card & thumb borders
 # 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
 
@@ -23,13 +24,13 @@ CARD_X = (1280 - CARD_W) // 2
 CARD_Y = (720 - CARD_H) // 2
 CARD_RADIUS = 55
 
-# Thumbnail - BADA aur UPER
-THUMB_SIZE = 340  # Bada kiya (320 se 340)
-THUMB_X = CARD_X + 60
-THUMB_Y = CARD_Y + 60  # Uper kiya (85 se 60)
+# Thumbnail - BADA, RIGHT, THODA NICHE
+THUMB_SIZE = 350
+THUMB_X = CARD_X + 75  # Right shift
+THUMB_Y = CARD_Y + 70  # Thoda niche
 THUMB_RADIUS = 35
 
-TITLE_X = THUMB_X + THUMB_SIZE + 60
+TITLE_X = THUMB_X + THUMB_SIZE + 55
 TITLE_Y = CARD_Y + 90
 META_Y = TITLE_Y + 55
 
@@ -38,8 +39,9 @@ BAR_HEIGHT = 5
 BAR_X = TITLE_X
 BAR_Y = META_Y + 70
 
-CONTROLS_Y = BAR_Y + 60
-CONTROLS_X = TITLE_X + 20
+# Controls - RIGHT aur NICHE
+CONTROLS_Y = BAR_Y + 70
+CONTROLS_X = TITLE_X + 30
 
 MAX_TITLE_WIDTH = 520
 
@@ -57,6 +59,7 @@ def trim_text(text, font, max_width):
 
 
 def _random_palette():
+    """Generate one random vibrant color palette"""
     h = random.random()
     if 0.08 < h < 0.16:
         h += 0.15
@@ -71,14 +74,14 @@ def _random_palette():
     return base, light, dark
 
 
-def create_card_glow_shadow(size, radius, c_base, c_light, c_dark):
-    """Card border pe CURVED GLOW + SHADOW - NO BLACK FILL"""
+def create_card_glow(size, radius, c_base, c_light, c_dark):
+    """Card border pe curved glow - NO fill inside"""
     try:
         w, h = size
         layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         draw = ImageDraw.Draw(layer)
         
-        # OUTER WHITE GLOW (curved)
+        # Outer white glow
         for i in range(35, 0, -2):
             alpha = int(80 * (1 - i / 35) ** 1.5)
             draw.rounded_rectangle(
@@ -87,7 +90,7 @@ def create_card_glow_shadow(size, radius, c_base, c_light, c_dark):
                 fill=(255, 255, 255, alpha)
             )
         
-        # COLOR GLOW (curved)
+        # Color glow
         for i in range(25, 0, -2):
             alpha = int(100 * (1 - i / 25) ** 1.4)
             draw.rounded_rectangle(
@@ -96,55 +99,76 @@ def create_card_glow_shadow(size, radius, c_base, c_light, c_dark):
                 fill=(*c_base, alpha)
             )
         
-        # THIN BORDER LINES
+        # Thin border lines
         draw.rounded_rectangle(
-            [0, 0, w, h],
-            radius=radius,
-            outline=(*c_light, 180),
-            width=2
+            [0, 0, w, h], radius=radius,
+            outline=(*c_light, 180), width=2
+        )
+        draw.rounded_rectangle(
+            [3, 3, w - 3, h - 3], radius=radius - 3,
+            outline=(*c_base, 255), width=2
         )
         
-        draw.rounded_rectangle(
-            [3, 3, w - 3, h - 3],
-            radius=radius - 3,
-            outline=(*c_base, 255),
-            width=2
-        )
-        
-        # Blur for smooth glow
         return layer.filter(ImageFilter.GaussianBlur(5))
-
     except Exception as e:
-        print(f"Glow error: {e}")
+        print(f"Card glow error: {e}")
         return Image.new("RGBA", size, (0, 0, 0, 0))
 
 
-def create_thumb_shadow_glow(size, x, y, w, h, radius, c_base):
-    """Thumbnail shadow + glow"""
-    shadow_layer = Image.new("RGBA", size, (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow_layer)
-    
+def create_thumb_glow(size, radius, c_base, c_light, c_dark):
+    """Thumbnail border pe ALAG glow"""
+    try:
+        w, h = size
+        layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(layer)
+        
+        # Outer white glow
+        for i in range(25, 0, -2):
+            alpha = int(70 * (1 - i / 25) ** 1.5)
+            draw.rounded_rectangle(
+                [-i, -i, w + i, h + i],
+                radius=radius + i,
+                fill=(255, 255, 255, alpha)
+            )
+        
+        # Color glow (different palette)
+        for i in range(18, 0, -2):
+            alpha = int(90 * (1 - i / 18) ** 1.4)
+            draw.rounded_rectangle(
+                [-i, -i, w + i, h + i],
+                radius=radius + i,
+                fill=(*c_base, alpha)
+            )
+        
+        # Border lines
+        draw.rounded_rectangle(
+            [0, 0, w, h], radius=radius,
+            outline=(*c_light, 200), width=2
+        )
+        draw.rounded_rectangle(
+            [2, 2, w - 2, h - 2], radius=radius - 2,
+            outline=(*c_base, 255), width=2
+        )
+        
+        return layer.filter(ImageFilter.GaussianBlur(4))
+    except Exception as e:
+        print(f"Thumb glow error: {e}")
+        return Image.new("RGBA", size, (0, 0, 0, 0))
+
+
+def create_thumb_shadow(size, x, y, w, h, radius):
+    """Thumbnail ke liye black shadow"""
+    shadow = Image.new("RGBA", size, (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
     off_x, off_y = 10, 14
-    
-    # Black shadow
-    for i in range(45, 0, -1):
-        alpha = int(220 * (1 - i / 45) ** 1.3)
+    for i in range(40, 0, -1):
+        alpha = int(200 * (1 - i / 40) ** 1.3)
         sd.rounded_rectangle(
             [x + off_x - i, y + off_y - i, x + w + off_x + i, y + h + off_y + i],
             radius=radius + i,
             fill=(0, 0, 0, alpha)
         )
-    
-    # Color glow
-    for i in range(20, 0, -1):
-        alpha = int(100 * (1 - i / 20) ** 1.5)
-        sd.rounded_rectangle(
-            [x - i, y - i, x + w + i, y + h + i],
-            radius=radius + i,
-            fill=(*c_base, alpha)
-        )
-    
-    return shadow_layer.filter(ImageFilter.GaussianBlur(20))
+    return shadow.filter(ImageFilter.GaussianBlur(18))
 
 
 # ===== ICONS =====
@@ -237,8 +261,12 @@ async def get_thumb(videoid: str) -> str:
         return YOUTUBE_IMG_URL
 
     try:
-        # === RANDOM PALETTE ===
-        c_base, c_light, c_dark = _random_palette()
+        # === TWO DIFFERENT RANDOM PALETTES ===
+        card_palette = _random_palette()      # Card border ke liye
+        thumb_palette = _random_palette()     # Thumb border ke liye
+        
+        c_base, c_light, c_dark = card_palette
+        t_base, t_light, t_dark = thumb_palette
         
         # === BACKGROUND ===
         base = Image.open(thumb_path).convert("RGBA")
@@ -250,38 +278,43 @@ async def get_thumb(videoid: str) -> str:
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
         bg = Image.alpha_composite(bg, dark)
 
-        # === CARD: TRANSPARENT + HIGH BLUR (NO BLACK!) ===
+        # === CARD: PURE TRANSPARENT + HIGH BLUR (NO COLOR FILL!) ===
         card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
         card_area = card_area.filter(ImageFilter.GaussianBlur(30))  # HIGH BLUR
-        # NO fill - pure transparent!
+        # NO color fill - pure transparent blur only
         card = card_area.convert("RGBA")
 
         mask = Image.new("L", (CARD_W, CARD_H), 0)
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
         bg.paste(card, (CARD_X, CARD_Y), mask)
 
-        # === CARD BORDER PE GLOW + SHADOW ===
-        card_glow = create_card_glow_shadow(
+        # === CARD BORDER GLOW (pehla palette) ===
+        card_glow = create_card_glow(
             (CARD_W, CARD_H), CARD_RADIUS, c_base, c_light, c_dark
         )
         bg.paste(card_glow, (CARD_X, CARD_Y), card_glow)
 
-        # === THUMBNAIL: BADA + UPER ===
+        # === THUMBNAIL: BADA + RIGHT + NICHE ===
         thumb_img = Image.open(thumb_path).convert("RGBA")
         thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
         thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
 
-        # Shadow + glow
-        thumb_shadow = create_thumb_shadow_glow(
-            (1280, 720), THUMB_X, THUMB_Y, THUMB_SIZE, THUMB_SIZE, THUMB_RADIUS, c_base
+        # Black shadow
+        thumb_shadow = create_thumb_shadow(
+            (1280, 720), THUMB_X, THUMB_Y, THUMB_SIZE, THUMB_SIZE, THUMB_RADIUS
         )
         bg = Image.alpha_composite(bg.convert("RGBA"), thumb_shadow)
+
+        # Thumb border glow (dusra palette - ALAG color!)
+        t_glow = create_thumb_glow(
+            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, t_base, t_light, t_dark
+        )
+        bg.paste(t_glow, (THUMB_X, THUMB_Y), t_glow)
 
         thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
         ImageDraw.Draw(thumb_mask).rounded_rectangle(
             (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
-
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
         # === TEXT ===
@@ -310,7 +343,7 @@ async def get_thumb(videoid: str) -> str:
         )
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=3, fill=c_base
+            radius=3, fill=c_base  # Card palette color
         )
 
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
@@ -320,18 +353,18 @@ async def get_thumb(videoid: str) -> str:
         total = duration_text if not is_live else "2:16"
         draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
-        # === CONTROLS ===
+        # === CONTROLS (RIGHT + NICHE) ===
         icon_y = CONTROLS_Y
         icon_size = 26
         sx = CONTROLS_X
         gap = 45
 
-        icon_shuffle(draw, sx, icon_y, icon_size, c_light)
-        icon_repeat(draw, sx + gap, icon_y, icon_size, c_light)
+        icon_shuffle(draw, sx, icon_y, icon_size, t_light)
+        icon_repeat(draw, sx + gap, icon_y, icon_size, t_light)
         icon_prev(draw, sx + gap * 2, icon_y, icon_size, "white")
         icon_pause(draw, sx + gap * 3, icon_y, icon_size, "white")
         icon_next(draw, sx + gap * 4, icon_y, icon_size, "white")
-        icon_heart(draw, sx + gap * 5, icon_y, icon_size, c_base)
+        icon_heart(draw, sx + gap * 5, icon_y, icon_size, t_base)
         icon_headphones(draw, sx + gap * 6, icon_y, icon_size, "white")
 
         # === SAVE ===
