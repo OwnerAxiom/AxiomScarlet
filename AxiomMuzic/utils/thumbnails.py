@@ -1,6 +1,6 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Transparent Card with Curved Glow
-# 🔹 Card transparent + blur, border pe curved glow
+# 🔸 AxiomMusic Project - Transparent Card with Glow
+# 🔹 Card: Transparent + High Blur, Border: Curved Glow
 # 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
 
@@ -23,13 +23,14 @@ CARD_X = (1280 - CARD_W) // 2
 CARD_Y = (720 - CARD_H) // 2
 CARD_RADIUS = 55
 
-THUMB_SIZE = 320
-THUMB_X = CARD_X + 65
-THUMB_Y = CARD_Y + 85
+# Thumbnail - BADA aur UPER
+THUMB_SIZE = 340  # Bada kiya (320 se 340)
+THUMB_X = CARD_X + 60
+THUMB_Y = CARD_Y + 60  # Uper kiya (85 se 60)
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
-TITLE_Y = CARD_Y + 95
+TITLE_Y = CARD_Y + 90
 META_Y = TITLE_Y + 55
 
 BAR_WIDTH = 480
@@ -70,16 +71,16 @@ def _random_palette():
     return base, light, dark
 
 
-def create_curved_glow_border(size, radius, c_base, c_light, c_dark):
-    """CURVED glow + shadow around card border - NO black background"""
+def create_card_glow_shadow(size, radius, c_base, c_light, c_dark):
+    """Card border pe CURVED GLOW + SHADOW - NO BLACK FILL"""
     try:
         w, h = size
         layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         draw = ImageDraw.Draw(layer)
         
         # OUTER WHITE GLOW (curved)
-        for i in range(30, 0, -2):
-            alpha = int(70 * (1 - i / 30) ** 1.5)
+        for i in range(35, 0, -2):
+            alpha = int(80 * (1 - i / 35) ** 1.5)
             draw.rounded_rectangle(
                 [-i, -i, w + i, h + i],
                 radius=radius + i,
@@ -87,63 +88,63 @@ def create_curved_glow_border(size, radius, c_base, c_light, c_dark):
             )
         
         # COLOR GLOW (curved)
-        for i in range(20, 0, -2):
-            alpha = int(90 * (1 - i / 20) ** 1.4)
+        for i in range(25, 0, -2):
+            alpha = int(100 * (1 - i / 25) ** 1.4)
             draw.rounded_rectangle(
                 [-i, -i, w + i, h + i],
                 radius=radius + i,
                 fill=(*c_base, alpha)
             )
         
-        # THIN BORDER LINES (curved)
+        # THIN BORDER LINES
         draw.rounded_rectangle(
             [0, 0, w, h],
             radius=radius,
-            outline=(*c_light, 200),
+            outline=(*c_light, 180),
             width=2
         )
         
         draw.rounded_rectangle(
-            [2, 2, w - 2, h - 2],
-            radius=radius - 2,
+            [3, 3, w - 3, h - 3],
+            radius=radius - 3,
             outline=(*c_base, 255),
             width=2
         )
         
         # Blur for smooth glow
-        return layer.filter(ImageFilter.GaussianBlur(4))
+        return layer.filter(ImageFilter.GaussianBlur(5))
 
     except Exception as e:
         print(f"Glow error: {e}")
         return Image.new("RGBA", size, (0, 0, 0, 0))
 
 
-def create_thumb_curved_shadow(size, x, y, w, h, radius, c_base):
-    """Thumbnail shadow + glow with curves"""
+def create_thumb_shadow_glow(size, x, y, w, h, radius, c_base):
+    """Thumbnail shadow + glow"""
     shadow_layer = Image.new("RGBA", size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow_layer)
     
-    off_x, off_y = 8, 12
+    off_x, off_y = 10, 14
     
-    # Black shadow (curved)
-    for i in range(35, 0, -1):
-        alpha = int(180 * (1 - i / 35) ** 1.3)
+    # Black shadow
+    for i in range(45, 0, -1):
+        alpha = int(220 * (1 - i / 45) ** 1.3)
         sd.rounded_rectangle(
             [x + off_x - i, y + off_y - i, x + w + off_x + i, y + h + off_y + i],
             radius=radius + i,
             fill=(0, 0, 0, alpha)
         )
     
-    # Color glow (curved)
-    for i in range(15, 0, -1):
-        alpha = int(80 * (1 - i / 15) ** 1.5)
+    # Color glow
+    for i in range(20, 0, -1):
+        alpha = int(100 * (1 - i / 20) ** 1.5)
         sd.rounded_rectangle(
             [x - i, y - i, x + w + i, y + h + i],
             radius=radius + i,
             fill=(*c_base, alpha)
         )
     
-    return shadow_layer.filter(ImageFilter.GaussianBlur(15))
+    return shadow_layer.filter(ImageFilter.GaussianBlur(20))
 
 
 # ===== ICONS =====
@@ -249,28 +250,29 @@ async def get_thumb(videoid: str) -> str:
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
         bg = Image.alpha_composite(bg, dark)
 
-        # === CARD: TRANSPARENT + BLUR (NO BLACK!) ===
+        # === CARD: TRANSPARENT + HIGH BLUR (NO BLACK!) ===
         card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
-        card_area = card_area.filter(ImageFilter.GaussianBlur(25))
-        # Card ko transparent hi rakhna hai - no black background!
+        card_area = card_area.filter(ImageFilter.GaussianBlur(30))  # HIGH BLUR
+        # NO fill - pure transparent!
         card = card_area.convert("RGBA")
 
         mask = Image.new("L", (CARD_W, CARD_H), 0)
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
         bg.paste(card, (CARD_X, CARD_Y), mask)
 
-        # === CARD BORDER PE CURVED GLOW + SHADOW ===
-        card_glow = create_curved_glow_border(
+        # === CARD BORDER PE GLOW + SHADOW ===
+        card_glow = create_card_glow_shadow(
             (CARD_W, CARD_H), CARD_RADIUS, c_base, c_light, c_dark
         )
         bg.paste(card_glow, (CARD_X, CARD_Y), card_glow)
 
-        # === THUMBNAIL with CURVED SHADOW + GLOW ===
+        # === THUMBNAIL: BADA + UPER ===
         thumb_img = Image.open(thumb_path).convert("RGBA")
         thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
         thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
 
-        thumb_shadow = create_thumb_curved_shadow(
+        # Shadow + glow
+        thumb_shadow = create_thumb_shadow_glow(
             (1280, 720), THUMB_X, THUMB_Y, THUMB_SIZE, THUMB_SIZE, THUMB_RADIUS, c_base
         )
         bg = Image.alpha_composite(bg.convert("RGBA"), thumb_shadow)
