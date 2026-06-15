@@ -53,6 +53,17 @@ async def _clear_(chat_id: int):
     await remove_active_video_chat(chat_id)
     await remove_active_chat(chat_id)
 
+
+async def delete_old_message(chat_id: int):
+    try:
+        if chat_id in db and db[chat_id] and len(db[chat_id]) > 0:
+            old_msg = db[chat_id][0].get("mystic")
+            if old_msg:
+                await old_msg.delete()
+                db[chat_id][0]["mystic"] = None
+    except Exception:
+        pass
+
 class Call(PyTgCalls):
     def __init__(self):
         PyTgCallsSession.notice_displayed = True
