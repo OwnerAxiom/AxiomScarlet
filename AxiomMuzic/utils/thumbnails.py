@@ -1,5 +1,5 @@
 # -----------------------------------------------
-#  AxiomMusic Project - PERFECT Rainbow Glow
+#  AxiomMusic Project - PERFECT Rainbow Border
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
 # 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
@@ -22,23 +22,23 @@ CARD_Y = (720 - CARD_H) // 2
 CARD_RADIUS = 55
 
 THUMB_SIZE = 320
-THUMB_X = CARD_X + 55
-THUMB_Y = CARD_Y + 75  # Thoda niche kiya
+THUMB_X = CARD_X + 70  # Thoda right shift
+THUMB_Y = CARD_Y + 75
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
-TITLE_Y = CARD_Y + 95  # Proper position
+TITLE_Y = CARD_Y + 95
 META_Y = TITLE_Y + 50
 
-# Bar
-BAR_WIDTH = 500
+# Bar - SMALL, LEFT SIDE, RED COLOR
+BAR_WIDTH = 420  # Chhota
 BAR_HEIGHT = 5
-BAR_X = TITLE_X
-BAR_Y = META_Y + 65
+BAR_X = TITLE_X  # Left aligned with title
+BAR_Y = META_Y + 60
 
-# Controls - Proper position
-CONTROLS_Y = BAR_Y + 55
-CONTROLS_X = TITLE_X
+# Controls - Bar ke niche, left aligned
+CONTROLS_Y = BAR_Y + 50
+CONTROLS_X = BAR_X  # Same as bar
 
 MAX_TITLE_WIDTH = 520
 
@@ -55,30 +55,31 @@ def trim_text(text, font, max_width):
         return text[:50] + "..."
 
 
-def create_rainbow_border_glow(size, radius, thickness=35, glow_size=100):
-    """RAINBOW GLOW - Reference image style"""
+def create_rainbow_border_outline(size, radius, thickness=8):
+    """THIN RAINBOW BORDER OUTLINE - Reference image style"""
     try:
         w, h = size
-        pad = glow_size
-        canvas = Image.new("RGBA", (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
+        # No padding - sirf border pe
+        canvas = Image.new("RGBA", size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(canvas)
 
-        # Rainbow colors - smooth transition
+        # Rainbow colors
         colors = [
             (255, 50, 130),   # Pink
-            (220, 50, 220),   # Magenta
-            (140, 60, 255),   # Purple
-            (70, 120, 255),   # Blue
-            (50, 200, 255),   # Cyan
-            (60, 240, 170),   # Green
-            (170, 240, 70),   # Lime
-            (240, 220, 50),   # Yellow
-            (255, 160, 50),   # Orange
-            (255, 90, 70),    # Red
+            (200, 50, 220),   # Magenta
+            (120, 60, 255),   # Purple
+            (60, 130, 255),   # Blue
+            (40, 200, 255),   # Cyan
+            (60, 230, 170),   # Green
+            (170, 230, 60),   # Lime
+            (230, 210, 50),   # Yellow
+            (255, 150, 50),   # Orange
+            (255, 80, 70),    # Red
             (255, 50, 130),   # Back to pink
         ]
 
-        num_layers = 140
+        # Draw thin layers for smooth gradient
+        num_layers = thickness * 3
         for i in range(num_layers):
             t = i / num_layers
             idx = int(t * (len(colors) - 1))
@@ -91,26 +92,26 @@ def create_rainbow_border_glow(size, radius, thickness=35, glow_size=100):
 
             alpha = 255
 
-            offset = pad + (i * thickness / num_layers)
-            layer_r = radius + thickness - (i * thickness / num_layers)
+            offset = i * 0.5
+            layer_r = radius - i * 0.5
             if layer_r < 5:
                 break
 
             draw.rounded_rectangle(
                 (int(offset), int(offset),
-                 int(w + pad * 2 - offset), int(h + pad * 2 - offset)),
+                 int(w - offset), int(h - offset)),
                 radius=int(layer_r),
                 outline=(r, g, b, alpha),
-                width=5
+                width=2
             )
 
-        # Less blur for sharp visible glow
-        glow = canvas.filter(ImageFilter.GaussianBlur(7))
+        # Very light blur for smooth look
+        glow = canvas.filter(ImageFilter.GaussianBlur(2))
         return glow
 
     except Exception as e:
         print(f"Glow error: {e}")
-        return Image.new("RGBA", (size[0] + 300, size[1] + 300), (0, 0, 0, 0))
+        return Image.new("RGBA", size, (0, 0, 0, 0))
 
 
 # ===== ICONS =====
@@ -225,11 +226,11 @@ async def get_thumb(videoid: str) -> str:
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
         bg.paste(card, (CARD_X, CARD_Y), mask)
 
-        # === CARD RAINBOW GLOW ON BORDER ===
-        card_glow = create_rainbow_border_glow(
-            (CARD_W, CARD_H), CARD_RADIUS, thickness=35, glow_size=100
+        # === CARD RAINBOW BORDER OUTLINE (THIN) ===
+        card_border = create_rainbow_border_outline(
+            (CARD_W, CARD_H), CARD_RADIUS, thickness=8
         )
-        bg.paste(card_glow, (CARD_X - 100, CARD_Y - 100), card_glow)
+        bg.paste(card_border, (CARD_X, CARD_Y), card_border)
 
         # === THUMBNAIL ===
         thumb_img = Image.open(thumb_path).convert("RGBA")
@@ -251,11 +252,11 @@ async def get_thumb(videoid: str) -> str:
         shadow = shadow.filter(ImageFilter.GaussianBlur(16))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail rainbow glow
-        t_glow = create_rainbow_border_glow(
-            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=28, glow_size=80
+        # Thumbnail rainbow border outline
+        t_border = create_rainbow_border_outline(
+            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, thickness=6
         )
-        bg.paste(t_glow, (THUMB_X - 80, THUMB_Y - 80), t_glow)
+        bg.paste(t_border, (THUMB_X, THUMB_Y), t_border)
 
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
@@ -275,7 +276,7 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
         draw.text((TITLE_X, META_Y), channel, fill=(190, 190, 190), font=meta_font)
 
-        # === PROGRESS BAR ===
+        # === PROGRESS BAR - SMALL, RED COLOR ===
         bar_end = BAR_X + BAR_WIDTH
         progress = int(BAR_WIDTH * 0.35)
 
@@ -285,7 +286,7 @@ async def get_thumb(videoid: str) -> str:
         )
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=3, fill=(90, 230, 80)
+            radius=3, fill=(255, 60, 80)  # RED color
         )
 
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
@@ -295,11 +296,11 @@ async def get_thumb(videoid: str) -> str:
         total = duration_text if not is_live else "2:16"
         draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
-        # === CONTROLS ===
+        # === CONTROLS - Bar ke niche, left aligned ===
         icon_y = CONTROLS_Y
-        icon_size = 26
+        icon_size = 24
         sx = CONTROLS_X
-        gap = 45
+        gap = 42
 
         icon_shuffle(draw, sx, icon_y, icon_size, (80, 255, 140))
         icon_repeat(draw, sx + gap, icon_y, icon_size, (255, 210, 70))
