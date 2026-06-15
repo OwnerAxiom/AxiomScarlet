@@ -1,6 +1,7 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - CLEAN Transparent Card
-# 🔹 Pure transparent + heavy blur + proper icons
+# 🔸 AxiomMusic Project - PERFECT Sanam Re Style
+# 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
+# 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
 
 import os
@@ -22,22 +23,22 @@ CARD_RADIUS = 55
 
 THUMB_SIZE = 320
 THUMB_X = CARD_X + 55
-THUMB_Y = CARD_Y + 65
+THUMB_Y = CARD_Y + 65  # Centered vertically
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
 TITLE_Y = CARD_Y + 90
 META_Y = TITLE_Y + 50
 
+BAR_Y = META_Y + 55
+BAR_X = TITLE_X
 BAR_WIDTH = 510
 BAR_HEIGHT = 5
-BAR_X = TITLE_X
-BAR_Y = META_Y + 55
 
 PILL_W = 360
 PILL_H = 85
 PILL_RADIUS = 42
-PILL_X = TITLE_X + 150
+PILL_X = TITLE_X + 150  # Controls ko right shift
 PILL_Y = BAR_Y + 45
 
 MAX_TITLE_WIDTH = 520
@@ -56,18 +57,26 @@ def trim_text(text, font, max_width):
 
 
 def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
-    """THICK RAINBOW NEON GLOW"""
+    """THICK RAINBOW NEON GLOW - Pink→Purple→Blue→Cyan→Green→Yellow→Orange"""
     try:
         w, h = size
         pad = 120
         canvas = Image.new("RGBA", (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
         draw = ImageDraw.Draw(canvas)
 
+        # Rainbow colors clockwise
         colors = [
-            (255, 40, 120), (220, 40, 220), (140, 60, 255),
-            (70, 120, 255), (40, 200, 255), (50, 230, 170),
-            (140, 240, 60), (240, 210, 40), (255, 150, 40),
-            (255, 80, 60), (255, 40, 120),
+            (255, 40, 120),   # Pink
+            (220, 40, 220),   # Magenta  
+            (140, 60, 255),   # Purple
+            (70, 120, 255),   # Blue
+            (40, 200, 255),   # Cyan
+            (50, 230, 170),   # Green-cyan
+            (140, 240, 60),   # Lime
+            (240, 210, 40),   # Yellow
+            (255, 150, 40),   # Orange
+            (255, 80, 60),    # Red-orange
+            (255, 40, 120),   # Back to pink
         ]
 
         num_layers = thickness * 5
@@ -104,6 +113,7 @@ def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
 
         glow = canvas.filter(ImageFilter.GaussianBlur(blur_amount))
 
+        # Sharp inner border
         sharp = Image.new("RGBA", (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
         sd = ImageDraw.Draw(sharp)
         sharp_colors = [(255, 40, 120), (140, 60, 255), (40, 200, 255), (140, 240, 60), (255, 150, 40)]
@@ -125,11 +135,10 @@ def create_rainbow_glow(size, radius, thickness=18, blur_amount=45):
         return img, img
 
 
-# ===== PROPER ICONS =====
+# ===== ICONS =====
 
 def icon_shuffle(draw, x, y, s, color):
     x, y, s = int(x), int(y), int(s)
-    # Crossed arrows
     draw.line([(x, y + s//3), (x + s//2, y)], fill=color, width=2)
     draw.line([(x + s//4, y), (x + s*3//4, y)], fill=color, width=2)
     draw.polygon([(x + s//2, y), (x + s//2 + 6, y + 4), (x + s//2, y + 8)], fill=color)
@@ -138,45 +147,40 @@ def icon_shuffle(draw, x, y, s, color):
     draw.polygon([(x + s//2, y + s), (x + s//2 + 6, y + s - 4), (x + s//2, y + s - 8)], fill=color)
 
 
+def icon_prev(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.polygon([(x + s*3//4, y + 3), (x + s*3//4, y + s - 3), (x + 3, y + s//2)], fill=color)
+    draw.rectangle([(x + s*4//5, y + 3), (x + s - 2, y + s - 3)], fill=color)
+
+
+def icon_play(draw, x, y, s, circle, triangle):
+    x, y, s = int(x), int(y), int(s)
+    draw.ellipse([(x, y), (x + s, y + s)], fill=circle)
+    draw.polygon([
+        (x + s*2//5, y + s//4),
+        (x + s*2//5, y + s*3//4),
+        (x + s*3//4, y + s//2)
+    ], fill=triangle)
+
+
+def icon_next(draw, x, y, s, color):
+    x, y, s = int(x), int(y), int(s)
+    draw.rectangle([(x + 2, y + 3), (x + s//5, y + s - 3)], fill=color)
+    draw.polygon([(x + s//4, y + 3), (x + s//4, y + s - 3), (x + s - 3, y + s//2)], fill=color)
+
+
 def icon_repeat(draw, x, y, s, color):
     x, y, s = int(x), int(y), int(s)
-    # Curved arrows loop
     draw.arc([(x + 2, y + 2), (x + s - 2, y + s//2 + 2)], 180, 360, fill=color, width=2)
     draw.polygon([(x + s - 6, y + 2), (x + s - 2, y + 2), (x + s - 6, y + 8)], fill=color)
     draw.arc([(x + 2, y + s//2 - 2), (x + s - 2, y + s - 2)], 0, 180, fill=color, width=2)
     draw.polygon([(x + 2, y + s - 2), (x + 6, y + s - 2), (x + 2, y + s - 8)], fill=color)
 
 
-def icon_prev(draw, x, y, s, color):
-    x, y, s = int(x), int(y), int(s)
-    # Triangle + bar
-    draw.polygon([(x + s*3//4, y + 3), (x + s*3//4, y + s - 3), (x + 3, y + s//2)], fill=color)
-    draw.rectangle([(x + s*4//5, y + 3), (x + s - 2, y + s - 3)], fill=color)
-
-
-def icon_play(draw, x, y, s, circle_color, triangle_color):
-    x, y, s = int(x), int(y), int(s)
-    # Circle background
-    draw.ellipse([(x, y), (x + s, y + s)], fill=circle_color)
-    # Play triangle
-    draw.polygon([
-        (x + s*2//5, y + s//4),
-        (x + s*2//5, y + s*3//4),
-        (x + s*3//4, y + s//2)
-    ], fill=triangle_color)
-
-
-def icon_next(draw, x, y, s, color):
-    x, y, s = int(x), int(y), int(s)
-    # Bar + triangle
-    draw.rectangle([(x + 2, y + 3), (x + s//5, y + s - 3)], fill=color)
-    draw.polygon([(x + s//4, y + 3), (x + s//4, y + s - 3), (x + s - 3, y + s//2)], fill=color)
-
-
 # ===== MAIN =====
 
 async def get_thumb(videoid: str) -> str:
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_clean.png")
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_sanam.png")
     if os.path.exists(cache_path):
         return cache_path
 
@@ -194,9 +198,10 @@ async def get_thumb(videoid: str) -> str:
         duration = data.get("duration")
         views = data.get("viewCount", {}).get("short", "Unknown Views")
         channel = data.get("channel", {}).get("name", "YouTube")
-    except Exception as e:
-        print(f"Fetch error: {e}")
-        return YOUTUBE_IMG_URL
+    except Exception:
+        title, thumbnail_url, duration, views, channel = (
+            "Unsupported Title", YOUTUBE_IMG_URL, None, "Unknown Views", "YouTube"
+        )
 
     is_live = not duration or str(duration).strip().lower() in {"", "live", "live now"}
     duration_text = "LIVE" if is_live else (duration or "Unknown")
@@ -209,8 +214,7 @@ async def get_thumb(videoid: str) -> str:
                         await f.write(await resp.read())
                 else:
                     return YOUTUBE_IMG_URL
-    except Exception as e:
-        print(f"Download error: {e}")
+    except Exception:
         return YOUTUBE_IMG_URL
 
     try:
@@ -220,15 +224,16 @@ async def get_thumb(videoid: str) -> str:
         base = ImageEnhance.Brightness(base).enhance(1.4)
         base = ImageEnhance.Contrast(base).enhance(1.2)
         base = ImageEnhance.Color(base).enhance(1.25)
-        bg = base.filter(ImageFilter.GaussianBlur(6))
+        bg = base.filter(ImageFilter.GaussianBlur(6))  # Kam blur
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 50))
         bg = Image.alpha_composite(bg, dark)
 
-        # === CARD: PURE TRANSPARENT + HEAVY BLUR (NO COLOR!) ===
+        # === CARD: LIGHT/WHITE TRANSPARENT BLUR (Sanam Re style) ===
         card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
-        card_area = card_area.filter(ImageFilter.GaussianBlur(12))  # HEAVY BLUR
-        # NO color fill - pure transparent
-        card = card_area.convert("RGBA")
+        card_area = card_area.filter(ImageFilter.GaussianBlur(10))  # Zyada blur
+        # LIGHT frosted glass - WHITE transparent
+        frosted = Image.new("RGBA", (CARD_W, CARD_H), (240, 240, 245, 120))
+        card = Image.alpha_composite(card_area, frosted)
 
         mask = Image.new("L", (CARD_W, CARD_H), 0)
         ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
@@ -246,6 +251,11 @@ async def get_thumb(videoid: str) -> str:
         thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
         thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.15)
 
+        thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
+        ImageDraw.Draw(thumb_mask).rounded_rectangle(
+            (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
+        )
+
         # Shadow
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         sd = ImageDraw.Draw(shadow)
@@ -255,7 +265,7 @@ async def get_thumb(videoid: str) -> str:
             radius=THUMB_RADIUS + 12, fill=(0, 0, 0, 130)
         )
         shadow = shadow.filter(ImageFilter.GaussianBlur(18))
-        bg = Image.alpha_composite(bg.convert("RGBA"), shadow)
+        bg = Image.alpha_composite(bg, shadow)
 
         # Thumbnail rainbow glow
         t_glow, t_sharp = create_rainbow_glow(
@@ -264,10 +274,6 @@ async def get_thumb(videoid: str) -> str:
         bg.paste(t_glow, (THUMB_X - 120, THUMB_Y - 120), t_glow)
         bg.paste(t_sharp, (THUMB_X - 120, THUMB_Y - 120), t_sharp)
 
-        thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
-        ImageDraw.Draw(thumb_mask).rounded_rectangle(
-            (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
-        )
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
         # === TEXT ===
@@ -291,17 +297,15 @@ async def get_thumb(videoid: str) -> str:
         bar_end = BAR_X + BAR_WIDTH
         progress = int(BAR_WIDTH * 0.30)
 
-        # Background track (gray)
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
             radius=3, fill=(90, 90, 90)
         )
-        # Progress (BRIGHT GREEN)
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
             radius=3, fill=(60, 230, 110)
         )
-        # Circle indicator
+
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         draw.ellipse([(cx - 8, cy - 8), (cx + 8, cy + 8)], fill="white")
 
@@ -309,7 +313,7 @@ async def get_thumb(videoid: str) -> str:
         total = duration_text if not is_live else "4:30"
         draw.text((bar_end - 42, BAR_Y + 18), total, fill="white", font=time_font)
 
-        # === CONTROL PILL ===
+        # === CONTROL PILL (Right side, bigger) ===
         pill = Image.new("RGBA", (PILL_W, PILL_H), (0, 0, 0, 0))
         pd = ImageDraw.Draw(pill)
         pd.rounded_rectangle((0, 0, PILL_W, PILL_H), radius=PILL_RADIUS,
@@ -318,30 +322,28 @@ async def get_thumb(videoid: str) -> str:
                              outline=(60, 60, 70, 200), width=1)
         bg.paste(pill, (PILL_X, PILL_Y), pill)
 
-        # Icons - PROPERLY DRAWN
+        # Icons - bigger
         icon_y = PILL_Y + (PILL_H - 30) // 2
         icon_size = 30
         sx = PILL_X + 30
         gap = 62
 
         icon_shuffle(draw, sx, icon_y, icon_size, "white")
-        icon_repeat(draw, sx + gap, icon_y, icon_size, (60, 230, 110))  # GREEN
-        icon_prev(draw, sx + gap * 2, icon_y, icon_size, "white")
-        
+        icon_prev(draw, sx + gap, icon_y, icon_size, "white")
+
         play_size = 50
         play_y = PILL_Y + (PILL_H - play_size) // 2
         icon_play(draw, sx + gap * 2 + 4, play_y, play_size, "white", (20, 20, 25))
-        
+
         icon_next(draw, sx + gap * 3 + 8, icon_y, icon_size, "white")
+        icon_repeat(draw, sx + gap * 4 + 12, icon_y, icon_size, (60, 230, 110))
 
         # === SAVE ===
         bg = bg.convert("RGB")
         bg.save(cache_path, "PNG", quality=95)
-        print("✓ Thumbnail saved successfully!")
 
     except Exception as e:
         import traceback
-        print(f"❌ Error: {e}")
         traceback.print_exc()
         return YOUTUBE_IMG_URL
     finally:
