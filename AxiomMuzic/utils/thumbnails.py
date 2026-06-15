@@ -1,27 +1,21 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Random Color Palette Glow
-# 🔹 Based on your original code
+# 🔸 AxiomMusic Project - FINAL with Random Palette
+# 🔹 Background + Card from your FINAL code
 # 📅 Copyright © 2026 – All Rights Reserved
 # -----------------------------------------------
 
 import os
 import re
 import random
-import aiohttp
-import aiofiles
 import colorsys
-from functools import lru_cache
+import aiofiles
+import aiohttp
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
 from py_yt import VideosSearch
 from config import YOUTUBE_IMG_URL
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-W, H = 1280, 720
-BG_COLOR = (45, 60, 65)
-TEXT_WHITE = (255, 255, 255)
-TEXT_GRAY = (175, 182, 188)
 
 # ===== LAYOUT =====
 CARD_W, CARD_H = 980, 470
@@ -31,7 +25,7 @@ CARD_RADIUS = 55
 
 THUMB_SIZE = 320
 THUMB_X = CARD_X + 65
-THUMB_Y = CARD_Y + 75
+THUMB_Y = CARD_Y + 65
 THUMB_RADIUS = 35
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
@@ -89,135 +83,46 @@ def _random_palette():
     return base, light, dark
 
 
-def _make_bg_v4():
-    """ORIGINAL background - EXACT from your code"""
-    base = Image.new("RGB", (W, H), BG_COLOR)
-    draw = ImageDraw.Draw(base, "RGBA")
-    for y in range(H):
-        ratio = y / H
-        draw.line([(0, y), (W, y)], fill=(0, 0, 0, int(45 * ratio)))
-    vignette = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    vd = ImageDraw.Draw(vignette)
-    for i in range(160, 0, -5):
-        alpha = int(130 * (1 - i / 160))
-        vd.rectangle([0, 0, W, H], outline=(0, 0, 0, alpha), width=i)
-    base.paste(vignette.filter(ImageFilter.GaussianBlur(45)), (0, 0), vignette)
-    return base
+def create_thin_rainbow_border(size, radius, c_base, c_light, c_dark, thickness=6):
+    """Thin rainbow border with random colors"""
+    try:
+        w, h = size
+        canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(canvas)
 
+        colors = [c_base, c_light, c_dark, (255, 255, 255), c_base]
 
-def _draw_card_border_with_random_glow(base: Image.Image, x1, y1, x2, y2, r=55, c_base=(202,215,221), c_light=(225,235,240), c_dark=(140,155,162)) -> Image.Image:
-    """Card border with random color glow - EXACT like your thumbnail"""
-    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-    
-    # Outer glow layers (like your art shadow)
-    for i in range(38, 0, -1):
-        alpha = int(95 * (1 - i / 38) ** 1.4)
-        d.rounded_rectangle([x1 - i, y1 - i, x2 + i, y2 + i], radius=r + i, fill=(255, 255, 255, alpha))
-    
-    # Base color glow
-    for i in range(18, 0, -1):
-        d.rounded_rectangle(
-            [x1 - i, y1 - i, x2 + i, y2 + i],
-            radius=r + i,
-            fill=(*c_base, int(75 * (1 - i / 18)))
-        )
-    
-    # Inner dark background
-    d.rounded_rectangle([x1 + 10, y1 + 10, x2 - 10, y2 - 10], radius=max(r - 10, 4), fill=(18, 24, 26, 255))
-    
-    # Border lines
-    for offset, color, bw in [(0, (*c_dark, 255), 5), (2, (*c_base, 255), 3), (4, (255, 255, 255, 180), 2)]:
-        d.rounded_rectangle([x1 + offset, y1 + offset, x2 - offset, y2 - offset], radius=max(r - offset, 4), outline=color, width=bw)
-    
-    return Image.alpha_composite(base.convert("RGBA"), layer).convert("RGB")
+        num_layers = 20
+        for i in range(num_layers):
+            t = i / num_layers
+            idx = int(t * (len(colors) - 1))
+            idx = min(idx, len(colors) - 2)
+            frac = t * (len(colors) - 1) - idx
+            c1, c2 = colors[idx], colors[idx + 1]
+            r = int(c1[0] + (c2[0] - c1[0]) * frac)
+            g = int(c1[1] + (c2[1] - c1[1]) * frac)
+            b = int(c1[2] + (c2[2] - c1[2]) * frac)
 
+            offset = i * (thickness / num_layers)
+            layer_r = radius - offset
+            
+            if layer_r < 1:
+                break
 
-def _draw_art_shadow(base: Image.Image, x, y, w, h, r=18, c_base=(202,215,221)) -> Image.Image:
-    """Thumbnail shadow with random color glow - EXACT from your code"""
-    shadow_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow_layer)
+            draw.rounded_rectangle(
+                (int(offset), int(offset),
+                 int(w - offset), int(h - offset)),
+                radius=int(layer_r),
+                outline=(r, g, b, 255),
+                width=1
+            )
 
-    off_x, off_y = 10, 14
+        glow = canvas.filter(ImageFilter.GaussianBlur(2))
+        return glow
 
-    # Deep black shadow
-    for i in range(48, 0, -1):
-        alpha = int(230 * (1 - i / 48) ** 1.3)
-        sd.rounded_rectangle(
-            [x+off_x-i, y+off_y-i, x+w+off_x+i, y+h+off_y+i],
-            radius=r+i,
-            fill=(0, 0, 0, alpha)
-        )
-
-    # Outer glow with random color
-    for i in range(22, 0, -1):
-        alpha = int(120 * (1 - i / 22) ** 1.6)
-        sd.rounded_rectangle(
-            [x-i, y-i, x+w+i, y+h+i],
-            radius=r+i,
-            fill=(*c_base, alpha)
-        )
-
-    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(22))
-    return Image.alpha_composite(base.convert("RGBA"), shadow_layer).convert("RGB")
-
-
-def _paste_rounded(base: Image.Image, img: Image.Image, x, y, w, h, r=18) -> Image.Image:
-    img = img.resize((w, h), Image.LANCZOS).convert("RGBA")
-    mask = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([(0, 0), (w - 1, h - 1)], radius=r, fill=255)
-    img.putalpha(mask)
-    base_r = base.convert("RGBA")
-    base_r.paste(img, (x, y), img)
-    return base_r.convert("RGB")
-
-
-def _draw_bar(base: Image.Image, bx, by_top, by_bot, progress: float = 0.06,
-              c_base=(202,215,221), c_light=(225,235,240), c_dark=(140,155,162)) -> Image.Image:
-
-    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-
-    bw = 8
-    knob_y = by_top + int((by_bot - by_top) * progress)
-    kr = 14
-
-    # Inactive line
-    d.rounded_rectangle(
-        [(bx - bw//2, by_top), (bx + bw//2, by_bot)],
-        radius=4,
-        fill=(90, 95, 110, 255)
-    )
-
-    # Active line with random color
-    if knob_y > by_top:
-        d.rounded_rectangle(
-            [(bx - bw//2, by_top), (bx + bw//2, knob_y)],
-            radius=4,
-            fill=(*c_base, 255)
-        )
-
-    # Glow rings
-    d.ellipse(
-        [(bx - kr - 16, knob_y - kr - 16),
-         (bx + kr + 16, knob_y + kr + 16)],
-        fill=(*c_base, 35)
-    )
-
-    d.ellipse(
-        [(bx - kr - 9, knob_y - kr - 9),
-         (bx + kr + 9, knob_y + kr + 9)],
-        fill=(*c_base, 70)
-    )
-
-    # Main knob
-    d.ellipse(
-        [(bx - kr, knob_y - kr),
-         (bx + kr, knob_y + kr)],
-        fill=(*c_base, 255)
-    )
-
-    return Image.alpha_composite(base.convert("RGBA"), layer).convert("RGB")
+    except Exception as e:
+        print(f"Border error: {e}")
+        return Image.new("RGBA", size, (0, 0, 0, 0))
 
 
 # ===== ICONS =====
@@ -275,134 +180,102 @@ def icon_headphones(draw, x, y, s, color):
 # ===== MAIN =====
 
 async def get_thumb(videoid: str) -> str:
-    output = f"cache/{videoid}_final.png"
-    cache = f"cache/thumb_{videoid}.png"
-    os.makedirs("cache", exist_ok=True)
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_final.png")
+    thumb_path = os.path.join(CACHE_DIR, f"thumb_{videoid}.png")
 
     # Fetch metadata
-    url = f"https://www.youtube.com/watch?v={videoid}"
     try:
-        data = (await VideosSearch(url, limit=1).next())["result"][0]
-        title = re.sub(r"[\x00-\x1f\x7f]", "", data.get("title", "Unknown")).strip()
-        duration = data.get("duration", "00:00") or "00:00"
-        thumbnail_url = data.get("thumbnails", [{}])[-1].get("url", "").split("?")[0]
-        v_raw = str(data.get("viewCount", {}).get("short", "N/A"))
-        vc = re.sub(r'\s*views?\s*', '', v_raw, flags=re.IGNORECASE).strip()
-        views, channel = f"{vc} views", data.get("channel", {}).get("name", "Unknown")
-    except Exception:
+        results = VideosSearch(f"https://www.youtube.com/watch?v={videoid}", limit=1)
+        results_data = await results.next()
+        result_items = results_data.get("result", [])
+        if not result_items:
+            raise ValueError("No results")
+        data = result_items[0]
+        title = re.sub(r"\W+", " ", data.get("title", "Unsupported Title")).title()
+        thumbnail_url = data.get("thumbnails", [{}])[0].get("url", YOUTUBE_IMG_URL)
+        duration = data.get("duration")
+        views = data.get("viewCount", {}).get("short", "Unknown Views")
+        channel = data.get("channel", {}).get("name", "YouTube")
+    except Exception as e:
+        print(f"Fetch error: {e}")
         return YOUTUBE_IMG_URL
+
+    is_live = not duration or str(duration).strip().lower() in {"", "live", "live now"}
+    duration_text = "LIVE" if is_live else (duration or "Unknown")
 
     # Download thumbnail
     try:
-        async with aiohttp.ClientSession() as sess:
-            async with sess.get(thumbnail_url, timeout=aiohttp.ClientTimeout(total=10)) as r:
-                async with aiofiles.open(cache, "wb") as f:
-                    await f.write(await r.read())
-        song_img = Image.open(cache).convert("RGBA")
-    except Exception:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(thumbnail_url, timeout=10) as resp:
+                if resp.status == 200:
+                    async with aiofiles.open(thumb_path, "wb") as f:
+                        await f.write(await resp.read())
+                else:
+                    return YOUTUBE_IMG_URL
+    except Exception as e:
+        print(f"Download error: {e}")
         return YOUTUBE_IMG_URL
 
     try:
         # === RANDOM PALETTE ===
         c_base, c_light, c_dark = _random_palette()
         
-        # === ORIGINAL BACKGROUND (EXACT from your code) ===
-        base = _make_bg_v4()
-        
-        # Add nebula effects (from your code)
-        bg = Image.new("RGBA", (W, H), (4, 5, 18, 255))
-        
-        nebula = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        ndraw = ImageDraw.Draw(nebula)
-        
-        for _ in range(8):
-            color = (
-                random.randint(40, 255),
-                random.randint(40, 255),
-                random.randint(40, 255),
-                random.randint(30, 70)
-            )
-            x = random.randint(-200, W)
-            y = random.randint(-200, H)
-            size = random.randint(250, 600)
-            ndraw.ellipse((x, y, x + size, y + size), fill=color)
-        
-        nebula = nebula.filter(ImageFilter.GaussianBlur(130))
-        bg = Image.alpha_composite(bg, nebula)
-        
-        # Stars
-        stars = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        sdraw = ImageDraw.Draw(stars)
-        
-        for _ in range(2500):
-            x = random.randint(0, W)
-            y = random.randint(0, H)
-            size = random.randint(1, 3)
-            alpha = random.randint(80, 220)
-            sdraw.ellipse((x, y, x + size, y + size), fill=(255, 255, 255, alpha))
-        
-        stars = stars.filter(ImageFilter.GaussianBlur(0.4))
-        bg = Image.alpha_composite(bg, stars)
-        
-        # Planet
-        planet = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        pdraw = ImageDraw.Draw(planet)
-        
-        planet_x = random.randint(70, 1150)
-        planet_y = random.randint(60, 550)
-        r = random.randint(35, 70)
-        
-        planet_color = (
-            random.randint(80, 255),
-            random.randint(80, 255),
-            random.randint(80, 255),
-            120
-        )
-        
-        pdraw.ellipse(
-            (planet_x-r, planet_y-r, planet_x+r, planet_y+r),
-            fill=planet_color
-        )
-        
-        planet = planet.filter(ImageFilter.GaussianBlur(8))
-        bg = Image.alpha_composite(bg, planet)
-        
-        base = bg.convert("RGB")
-        
-        # === CARD with TRANSPARENT BLUR (EXACT from your code) ===
-        card_area = base.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
+        # === BACKGROUND (EXACT from your FINAL code) ===
+        base = Image.open(thumb_path).convert("RGBA")
+        base = base.resize((1280, 720), Image.LANCZOS)
+        base = ImageEnhance.Brightness(base).enhance(1.35)
+        base = ImageEnhance.Contrast(base).enhance(1.15)
+        base = ImageEnhance.Color(base).enhance(1.2)
+        bg = base.filter(ImageFilter.GaussianBlur(8))
+        dark = Image.new("RGBA", bg.size, (0, 0, 0, 70))
+        bg = Image.alpha_composite(bg, dark)
+
+        # === CARD with TRANSPARENT BLUR (EXACT from your FINAL code) ===
+        card_area = bg.crop((CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H))
         card_area = card_area.filter(ImageFilter.GaussianBlur(25))
-        
-        # Card with random color border glow
-        base = _draw_card_border_with_random_glow(
-            base,
-            CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H,
-            CARD_RADIUS,
-            c_base, c_light, c_dark
+        card = card_area.convert("RGBA")
+
+        mask = Image.new("L", (CARD_W, CARD_H), 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, CARD_W, CARD_H), radius=CARD_RADIUS, fill=255)
+        bg.paste(card, (CARD_X, CARD_Y), mask)
+
+        # === THIN RAINBOW BORDER with RANDOM COLORS ===
+        card_border = create_thin_rainbow_border(
+            (CARD_W, CARD_H), CARD_RADIUS, c_base, c_light, c_dark, thickness=6
         )
-        
-        # === THUMBNAIL with SHADOW + GLOW (EXACT from your code) ===
-        base = _draw_art_shadow(base, THUMB_X, THUMB_Y, THUMB_SIZE, THUMB_SIZE, THUMB_RADIUS, c_base)
-        base = _paste_rounded(base, song_img, THUMB_X, THUMB_Y, THUMB_SIZE, THUMB_SIZE, THUMB_RADIUS)
-        
-        # Glass effect
-        glass = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        gd = ImageDraw.Draw(glass)
-        
-        gd.rounded_rectangle(
-            [THUMB_X + 3, THUMB_Y + 3, THUMB_X + THUMB_SIZE - 3, THUMB_Y + THUMB_SIZE - 3],
-            radius=THUMB_RADIUS - 3,
-            fill=(255, 255, 255, 8)
+        bg.paste(card_border, (CARD_X, CARD_Y), card_border)
+
+        # === THUMBNAIL ===
+        thumb_img = Image.open(thumb_path).convert("RGBA")
+        thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
+        thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
+
+        thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
+        ImageDraw.Draw(thumb_mask).rounded_rectangle(
+            (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
-        
-        glass = glass.filter(ImageFilter.GaussianBlur(4))
-        base = Image.alpha_composite(base.convert("RGBA"), glass).convert("RGB")
-        
-        # === PROGRESS BAR ===
-        base = _draw_bar(base, BAR_X, BAR_Y, BAR_Y + BAR_HEIGHT, 0.35, c_base, c_light, c_dark)
-        
-        draw = ImageDraw.Draw(base)
-        
+
+        shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(shadow)
+        sd.rounded_rectangle(
+            (THUMB_X - 8, THUMB_Y - 8,
+             THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
+            radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
+        )
+        shadow = shadow.filter(ImageFilter.GaussianBlur(16))
+        bg = Image.alpha_composite(bg, shadow)
+
+        # Thumbnail border with random colors
+        t_border = create_thin_rainbow_border(
+            (THUMB_SIZE, THUMB_SIZE), THUMB_RADIUS, c_base, c_light, c_dark, thickness=4
+        )
+        bg.paste(t_border, (THUMB_X, THUMB_Y), t_border)
+
+        bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
+
+        # === TEXT ===
+        draw = ImageDraw.Draw(bg)
+
         try:
             title_font = ImageFont.truetype("AxiomMuzic/assets/assets/font2.ttf", 40)
             meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/font.ttf", 22)
@@ -416,10 +289,25 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
         draw.text((TITLE_X, META_Y), channel, fill=(190, 190, 190), font=meta_font)
 
-        # Progress bar times
-        draw.text((BAR_X, BAR_Y + 17), "01:17", fill="white", font=time_font)
-        total = duration if not is_live else "2:16"
-        draw.text((BAR_X + BAR_WIDTH - 40, BAR_Y + 17), total, fill="white", font=time_font)
+        # === PROGRESS BAR ===
+        bar_end = BAR_X + BAR_WIDTH
+        progress = int(BAR_WIDTH * 0.35)
+
+        draw.rounded_rectangle(
+            [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
+            radius=3, fill=(85, 85, 85)
+        )
+        draw.rounded_rectangle(
+            [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
+            radius=3, fill=c_base  # Random color
+        )
+
+        cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
+        draw.ellipse([(cx - 7, cy - 7), (cx + 7, cy + 7)], fill="white")
+
+        draw.text((BAR_X, BAR_Y + 17), "01:58", fill="white", font=time_font)
+        total = duration_text if not is_live else "2:16"
+        draw.text((bar_end - 40, BAR_Y + 17), total, fill="white", font=time_font)
 
         # === CONTROLS ===
         icon_y = CONTROLS_Y
@@ -436,8 +324,8 @@ async def get_thumb(videoid: str) -> str:
         icon_headphones(draw, sx + gap * 6, icon_y, icon_size, "white")
 
         # === SAVE ===
-        base = base.convert("RGB")
-        base.save(output, "PNG", quality=95)
+        bg = bg.convert("RGB")
+        bg.save(cache_path, "PNG", quality=95)
 
     except Exception as e:
         import traceback
@@ -445,9 +333,9 @@ async def get_thumb(videoid: str) -> str:
         return YOUTUBE_IMG_URL
     finally:
         try:
-            if os.path.exists(cache):
-                os.remove(cache)
+            if os.path.exists(thumb_path):
+                os.remove(thumb_path)
         except OSError:
             pass
 
-    return output
+    return cache_path
