@@ -16,7 +16,7 @@ import random
 from pyrogram import filters
 import asyncio
 from time import time, strftime, gmtime
-from pyrogram.enums import ChatMemberStatus, ChatType
+from pyrogram.enums import ChatMemberStatus, ChatType, ButtonStyle
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import (
     CallbackQuery,
@@ -60,6 +60,13 @@ from AxiomMuzic.utils.inline.start import private_panel
 from config import BANNED_USERS, OWNER_ID
 import config
 
+def axiombtn():
+    return random.choice([
+        ButtonStyle.SUCCESS,
+        ButtonStyle.DANGER,
+        ButtonStyle.PRIMARY
+    ])
+    
 TOGGLE_COMMAND_RE = re.compile(
     r"^[!/.](?P<command>autoplay|aplay|thumbnail|thumb|thum)(?:@\w+)?"
     r"(?:\s+(?P<state>on|off|enable|disable|enabled|disabled))?\s*$",
@@ -263,21 +270,21 @@ async def support(client, CallbackQuery, _):
             [
                 [          
                     InlineKeyboardButton(
-                        text="ʙᴏᴛ-ᴀᴘɪ-ɪɴғᴏ 💌", callback_data="api_status"
+                        text="ʙᴏᴛ-ᴀᴘɪ-ɪɴғᴏ 💌", callback_data="api_status", style=axiombtn()
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        text="sᴜᴘᴘᴏʀᴛ", url=config.SUPPORT_CHAT
+                        text="sᴜᴘᴘᴏʀᴛ", url=config.SUPPORT_CHAT, style=axiombtn()
                     ),
                     InlineKeyboardButton(
-                        text="ᴜᴘᴅᴀᴛᴇs", url=config.SUPPORT_CHANNEL
+                        text="ᴜᴘᴅᴀᴛᴇs", url=config.SUPPORT_CHANNEL, style=axiombtn()
                     ),
 
                 ],
                 [          
                     InlineKeyboardButton(
-                        text="ʙᴀᴄᴋ", callback_data=f"settingsback_helper"
+                        text="ʙᴀᴄᴋ", callback_data=f"settingsback_helper", style=axiombtn()
                     )
                 ],
             ]
