@@ -313,25 +313,25 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
 
         # Channel
         draw.text((TITLE_X, META_Y), f"Channel: {channel}",
-                  fill=(200, 200, 200), font=axiom_font)
+                  fill=accent, font=axiom_font)
 
         # Views
         draw.text((TITLE_X, VIEWS_Y), f"Views: {views}",
-                  fill=(180, 180, 180), font=axiom_font)
+                  fill=accent, font=axiom_font)
 
         # Player
         draw.text((TITLE_X, PLAYER_Y), f"Player: @AxiomVcBot",
-                  fill=(190, 190, 190), font=axiom_font)
+                  fill=accent, font=axiom_font)
 
         # Dev
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
-                  fill=(170, 170, 170), font=axiom_font)
+                  fill=accent, font=axiom_font)
 
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=6, fill=(70, 70, 70)
+            radius=10, fill=accent
         )
 
         # Progress fill (DYNAMIC based on progress_percent)
