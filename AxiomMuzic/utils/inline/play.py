@@ -140,9 +140,8 @@ def stream_markup_timer(_, chat_id, played, dur):
         ],
         [
             InlineKeyboardButton(text=thumb_text, callback_data=f"THUMBTOGGLE|{chat_id}", style=thumb_style,),
+            InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close",  style=random_style()),
         ],
-
-        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close",  style=random_style())],
     ]
     return buttons
 
