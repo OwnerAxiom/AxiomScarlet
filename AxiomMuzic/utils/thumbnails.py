@@ -340,13 +340,13 @@ async def get_thumb(videoid: str) -> str:
         draw.ellipse([(cx - 9, cy - 9), (cx + 9, cy + 9)], fill="white")
 
         # Times
-        draw.text((BAR_X, BAR_Y + 20), "0:00", fill=(220, 220, 220), font=time_font)
-        total = duration_text if not is_live else "4:30"
+        draw.text((BAR_X, BAR_Y + 20), "0:34", fill=(220, 220, 220), font=time_font)
+        total = duration_text if not is_live else "4:39"
         draw.text((bar_end - 50, BAR_Y + 20), total, fill=(220, 220, 220), font=time_font)
 
         # SAVE
         bg = bg.convert("RGB")
-        bg.save(cache_path, "PNG", quality=99)
+        bg.save(cache_path, "PNG", quality=100)
         print(f"✓ Thumbnail saved with color RGB{accent}")
 
     except Exception as e:
