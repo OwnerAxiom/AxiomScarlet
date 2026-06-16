@@ -43,7 +43,7 @@ async def animate_thumbnail_progress(message, videoid, duration_seconds, chat_id
             progress = min(i * 10, 100)
             
             # Naya thumbnail generate kar (naye random color ke saath)
-            thumb_path = await get_thumb(videoid, progress_percent=progress)
+            thumb_path = await get_thumb(videoid, progress_percent=progress, use_cache=False)
             
             if not thumb_path or thumb_path.endswith("logo.jpg"):
                 await asyncio.sleep(10)
