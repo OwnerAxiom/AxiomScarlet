@@ -231,11 +231,11 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         return YOUTUBE_IMG_URL
 
     try:
-        # BACKGROUND
+        # BACKGROUND - INCREASED BLUR
         base = Image.open(thumb_path).convert("RGBA")
         base = base.resize((1280, 720), Image.LANCZOS)
         base = ImageEnhance.Brightness(base).enhance(1.1)
-        bg = base.filter(ImageFilter.GaussianBlur(10))
+        bg = base.filter(ImageFilter.GaussianBlur(40))
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
         bg = Image.alpha_composite(bg, dark)
 
@@ -255,7 +255,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
 
-        # Thumbnail shadow
+        # Thumbnail shadow - INCREASED BLUR
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         sd = ImageDraw.Draw(shadow)
         sd.rounded_rectangle(
@@ -263,24 +263,24 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
              THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
             radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
         )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(10))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(25))  # INCREASED from 10 to 15
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail border with CLEAN GLOW
+        # Thumbnail border with ENHANCED GLOW (Second image style)
         thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         tg = ImageDraw.Draw(thumb_glow)
         
-        # Outer glow (3 layers)
-        for spread, alpha in [(12, 80), (8, 140), (4, 200)]:
+        # Outer glow - INCREASED LAYERS AND SPREAD
+        for spread, alpha in [(20, 60), (15, 90), (10, 130), (6, 180), (3, 230)]:
             tg.rounded_rectangle(
                 (THUMB_X - spread, THUMB_Y - spread,
                  THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
                 radius=THUMB_RADIUS + spread,
                 outline=accent + (alpha,),
-                width=3
+                width=4
             )
         
-        # Inner glow (inside border - 2 layers)
+        # Inner glow (inside border)
         for inner, alpha in [(3, 120), (6, 80)]:
             tg.rounded_rectangle(
                 (THUMB_X + inner, THUMB_Y + inner,
@@ -307,31 +307,33 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             meta_font = title_font
             time_font = title_font
 
-        # Title
+        # Title - CHANGED TO WHITE with shadow for clarity
         trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
-        draw.text((TITLE_X, TITLE_Y), trimmed, fill=accent, font=title_font)
+        # Add text shadow for better visibility
+        draw.text((TITLE_X + 2, TITLE_Y + 2), trimmed, fill=(0, 0, 0, 150), font=title_font)
+        draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
 
-        # Channel
-        draw.text((TITLE_X, META_Y), f"Channel: {channel}",
-                  fill=accent, font=axiom_font)
+        # Channel - CHANGED TO WHITE
+        draw.text((TITLE_X, META_Y), f"Channel | {channel}",
+                  fill=(190, 190, 190), font=axiom_font)
 
-        # Views
-        draw.text((TITLE_X, VIEWS_Y), f"Views: {views}",
-                  fill=accent, font=axiom_font)
+        # Views - CHANGED TO WHITE
+        draw.text((TITLE_X, VIEWS_Y), f"Views | {views}",
+                  fill=(190, 190, 190), font=axiom_font)
 
-        # Player
-        draw.text((TITLE_X, PLAYER_Y), f"Player: @AxiomVcBot",
-                  fill=accent, font=axiom_font)
+        # Player - CHANGED TO WHITE
+        draw.text((TITLE_X, PLAYER_Y), f"Player | @AxiomVcBot",
+                  fill=(190, 190, 190), font=axiom_font)
 
-        # Dev
+        # Dev - CHANGED TO WHITE
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
-                  fill=accent, font=axiom_font)
+                  fill=(190, 190, 190), font=axiom_font)
 
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=10, fill=accent
+            radius=10, fill=(60, 60, 60)  # Darker gray for contrast
         )
 
         # Progress fill (DYNAMIC based on progress_percent)
@@ -341,17 +343,18 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             radius=10, fill=accent
         )
 
-        # Progress circle with CLEAN GLOW
+        # Progress circle with ENHANCED GLOW (Second image style)
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
-        # Glow layers (3 layers)
-        for glow_size, alpha in [(16, 70), (12, 120), (8, 180)]:
+        # Glow layers - INCREASED SIZE AND LAYERS
+        for glow_size, alpha in [(25, 50), (18, 90), (12, 140), (8, 200)]:
             draw.ellipse([(cx - glow_size, cy - glow_size), 
                          (cx + glow_size, cy + glow_size)],
                         fill=accent + (alpha,))
         
-        # White circle
-        draw.ellipse([(cx - 9, cy - 9), (cx + 9, cy + 9)], fill="white")
+        # White circle - LIGHT GRAY
+        draw.ellipse([(cx - 11, cy - 11), (cx + 11, cy + 11)], fill=(200, 200, 200)) 
+        draw.ellipse([(cx - 6, cy - 6), (cx + 6, cy + 6)], fill=(220, 220, 220))  
 
         # Calculate current time based on progress
         try:
@@ -373,10 +376,10 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         except:
             current_time = "0:00"
 
-        # Times
-        draw.text((BAR_X, BAR_Y + 20), current_time, fill=(220, 220, 220), font=time_font)
+        # Times - LIGHT GRAY
+        draw.text((BAR_X, BAR_Y + 20), current_time, fill=(200, 200, 200), font=time_font)  
         total = duration_text if not is_live else "LIVE"
-        draw.text((bar_end - 50, BAR_Y + 20), total, fill=(220, 220, 220), font=time_font)
+        draw.text((bar_end - 50, BAR_Y + 20), total, fill=(200, 200, 200), font=time_font)  
 
         # SAVE
         bg = bg.convert("RGB")
