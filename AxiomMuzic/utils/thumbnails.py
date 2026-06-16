@@ -242,9 +242,9 @@ async def get_thumb(videoid: str) -> str:
 
         # Fonts
         try:
-            title_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 52)
-            meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 32)
-            time_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 28)
+            title_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 52)
+            meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 32)
+            time_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 28)
         except OSError:
             title_font = ImageFont.load_default()
             meta_font = title_font
@@ -255,7 +255,7 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
 
         # Artist
-        draw.text((TITLE_X, META_Y), f"Artist: {channel}",
+        draw.text((TITLE_X, META_Y), f"Channel: {channel}",
                   fill=(200, 200, 200), font=meta_font)
 
         # Views
@@ -266,14 +266,14 @@ async def get_thumb(videoid: str) -> str:
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=4, fill=(80, 80, 80)
+            radius=8, fill=(80, 80, 80)
         )
 
         # Progress fill (accent color)
         progress = int(BAR_WIDTH * 0.70)
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=4, fill=accent
+            radius=8, fill=accent
         )
 
         # White circle indicator with glow
@@ -291,7 +291,7 @@ async def get_thumb(videoid: str) -> str:
 
         # SAVE
         bg = bg.convert("RGB")
-        bg.save(cache_path, "PNG", quality=95)
+        bg.save(cache_path, "PNG", quality=99)
         print(f"✓ Thumbnail saved with color RGB{accent}")
 
     except Exception as e:
