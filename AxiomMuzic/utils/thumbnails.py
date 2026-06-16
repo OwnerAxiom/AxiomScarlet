@@ -148,11 +148,11 @@ COLOR_PALETTE = [
     (245, 0, 255), (250, 0, 255),
 ]
 
-# Layout
+# Layout - UPDATED
 THUMB_SIZE = 420
 THUMB_X = 60
 THUMB_Y = (720 - THUMB_SIZE) // 2
-THUMB_RADIUS = 45
+THUMB_RADIUS = 50
 
 TITLE_X = THUMB_X + THUMB_SIZE + 60
 TITLE_Y = 180
@@ -162,7 +162,7 @@ PLAYER_Y = VIEWS_Y + 55
 DEV_Y = PLAYER_Y + 55
 
 BAR_X = TITLE_X
-BAR_Y = DEV_Y + 55
+BAR_Y = DEV_Y + 75  # MOVED DOWN (pehle 55 tha)
 BAR_WIDTH = 680
 BAR_HEIGHT = 8
 
@@ -255,29 +255,29 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
 
-        # Thumbnail shadow - INCREASED BLUR
+        # Thumbnail shadow - ACCENT COLOR
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         sd = ImageDraw.Draw(shadow)
         sd.rounded_rectangle(
             (THUMB_X - 8, THUMB_Y - 8,
              THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
-            radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
+            radius=THUMB_RADIUS + 10, fill=accent + (140,)
         )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(25))  # INCREASED from 10 to 15
+        shadow = shadow.filter(ImageFilter.GaussianBlur(25))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail border with ENHANCED GLOW (Second image style)
+        # Thumbnail border with SOFT GRADIENT SHADOW
         thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         tg = ImageDraw.Draw(thumb_glow)
         
-        # Outer glow - INCREASED LAYERS AND SPREAD
-        for spread, alpha in [(20, 60), (15, 90), (10, 130), (6, 180), (3, 230)]:
+        # Soft gradient shadow - center se bahar fade
+        for spread, alpha in [(25, 40), (20, 70), (15, 110), (10, 160), (6, 200), (3, 240)]:
             tg.rounded_rectangle(
                 (THUMB_X - spread, THUMB_Y - spread,
                  THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
                 radius=THUMB_RADIUS + spread,
                 outline=accent + (alpha,),
-                width=4
+                width=5
             )
         
         # Inner glow (inside border)
@@ -307,25 +307,24 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             meta_font = title_font
             time_font = title_font
 
-        # Title - CHANGED TO WHITE with shadow for clarity
+        # Title - WHITE with shadow
         trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
-        # Add text shadow for better visibility
         draw.text((TITLE_X + 2, TITLE_Y + 2), trimmed, fill=(0, 0, 0, 150), font=title_font)
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
 
-        # Channel - CHANGED TO WHITE
+        # Channel - LIGHT GRAY
         draw.text((TITLE_X, META_Y), f"Channel | {channel}",
                   fill=(190, 190, 190), font=axiom_font)
 
-        # Views - CHANGED TO WHITE
+        # Views - LIGHT GRAY
         draw.text((TITLE_X, VIEWS_Y), f"Views | {views}",
                   fill=(190, 190, 190), font=axiom_font)
 
-        # Player - CHANGED TO WHITE
+        # Player - LIGHT GRAY
         draw.text((TITLE_X, PLAYER_Y), f"Player | @AxiomVcBot",
                   fill=(190, 190, 190), font=axiom_font)
 
-        # Dev - CHANGED TO WHITE
+        # Dev - LIGHT GRAY
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
                   fill=(190, 190, 190), font=axiom_font)
 
@@ -333,28 +332,28 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=10, fill=(60, 60, 60)  # Darker gray for contrast
+            radius=10, fill=(60, 60, 60)
         )
 
-        # Progress fill (DYNAMIC based on progress_percent)
+        # Progress fill (DYNAMIC)
         progress = int(BAR_WIDTH * (progress_percent / 100))
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
             radius=10, fill=accent
         )
 
-        # Progress circle with ENHANCED GLOW (Second image style)
+        # Progress circle with SOFT GRADIENT SHADOW
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
-        # Glow layers - INCREASED SIZE AND LAYERS
-        for glow_size, alpha in [(25, 50), (18, 90), (12, 140), (8, 200)]:
+        # Soft gradient shadow - center se bahar fade effect
+        for glow_size, alpha in [(30, 30), (24, 50), (18, 80), (12, 130), (8, 190), (4, 240)]:
             draw.ellipse([(cx - glow_size, cy - glow_size), 
                          (cx + glow_size, cy + glow_size)],
                         fill=accent + (alpha,))
         
-        # White circle - LIGHT GRAY
-        draw.ellipse([(cx - 11, cy - 11), (cx + 11, cy + 11)], fill=(200, 200, 200)) 
-        draw.ellipse([(cx - 6, cy - 6), (cx + 6, cy + 6)], fill=(220, 220, 220))  
+        # White circle - center
+        draw.ellipse([(cx - 11, cy - 11), (cx + 11, cy + 11)], fill=(210, 210, 210)) 
+        draw.ellipse([(cx - 6, cy - 6), (cx + 6, cy + 6)], fill=(230, 230, 230))
 
         # Calculate current time based on progress
         try:
