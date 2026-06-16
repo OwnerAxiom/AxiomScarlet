@@ -1,5 +1,5 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Perfect Enhanced Thumbnail
+# 🔸 AxiomMusic Project - Animated Enhanced Thumbnail
 # 🔹 Developed & Maintained by: Axiom Bots
 # -----------------------------------------------
 
@@ -157,11 +157,11 @@ TITLE_X = THUMB_X + THUMB_SIZE + 60
 TITLE_Y = 180
 META_Y = TITLE_Y + 75
 VIEWS_Y = META_Y + 55
-PLAYER_Y = VIEWS_Y + 55  # Same spacing as between Channel and Views
-DEV_Y = PLAYER_Y + 55    # Same spacing
+PLAYER_Y = VIEWS_Y + 55
+DEV_Y = PLAYER_Y + 55
 
 BAR_X = TITLE_X
-BAR_Y = DEV_Y + 55  # Same spacing below Dev
+BAR_Y = DEV_Y + 55
 BAR_WIDTH = 680
 BAR_HEIGHT = 8
 
@@ -183,8 +183,10 @@ def trim_text(text, font, max_width):
         return text[:60]
 
 
-async def get_thumb(videoid: str) -> str:
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_simple.png")
+async def get_thumb(videoid: str, progress_percent: int = 0) -> str:
+    # Cache path includes progress for unique files
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}.png")
+    
     if os.path.exists(cache_path):
         return cache_path
 
@@ -253,7 +255,7 @@ async def get_thumb(videoid: str) -> str:
         shadow = shadow.filter(ImageFilter.GaussianBlur(15))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail border with CLEAN GLOW (random color)
+        # Thumbnail border with CLEAN GLOW
         thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         tg = ImageDraw.Draw(thumb_glow)
         
@@ -305,13 +307,13 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, VIEWS_Y), f"Views: {views}",
                   fill=(180, 180, 180), font=meta_font)
 
-        # Player (NEW LINE)
+        # Player
         draw.text((TITLE_X, PLAYER_Y), f"Player: @AxiomVcBot",
-                  fill=(190, 190, 190), font=meta_font)
+                  fill=(190, 190, 190), font=title_font)
 
-        # Dev (NEW LINE - NO BRACKETS)
+        # Dev
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
-                  fill=(170, 170, 170), font=meta_font)
+                  fill=(170, 170, 170), font=title_font)
 
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
@@ -320,14 +322,14 @@ async def get_thumb(videoid: str) -> str:
             radius=6, fill=(70, 70, 70)
         )
 
-        # Progress fill (20%)
-        progress = int(BAR_WIDTH * 0.20)
+        # Progress fill (DYNAMIC based on progress_percent)
+        progress = int(BAR_WIDTH * (progress_percent / 100))
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=6, fill=accent
+            radius=10, fill=accent
         )
 
-        # Progress circle with CLEAN GLOW (random color)
+        # Progress circle with CLEAN GLOW
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
         # Glow layers (3 layers)
@@ -339,15 +341,36 @@ async def get_thumb(videoid: str) -> str:
         # White circle
         draw.ellipse([(cx - 9, cy - 9), (cx + 9, cy + 9)], fill="white")
 
+        # Calculate current time based on progress
+        try:
+            # Parse duration (format: "MM:SS" or "HH:MM:SS")
+            if duration and ":" in str(duration):
+                parts = str(duration).split(":")
+                if len(parts) == 2:
+                    total_seconds = int(parts[0]) * 60 + int(parts[1])
+                elif len(parts) == 3:
+                    total_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                else:
+                    total_seconds = 0
+                
+                current_seconds = int((progress_percent / 100) * total_seconds)
+                current_minutes = current_seconds // 60
+                current_secs = current_seconds % 60
+                current_time = f"{current_minutes}:{current_secs:02d}"
+            else:
+                current_time = "0:00"
+        except:
+            current_time = "0:00"
+
         # Times
-        draw.text((BAR_X, BAR_Y + 20), "0:34", fill=(220, 220, 220), font=time_font)
-        total = duration_text if not is_live else "4:39"
+        draw.text((BAR_X, BAR_Y + 20), current_time, fill=(220, 220, 220), font=time_font)
+        total = duration_text if not is_live else "LIVE"
         draw.text((bar_end - 50, BAR_Y + 20), total, fill=(220, 220, 220), font=time_font)
 
         # SAVE
         bg = bg.convert("RGB")
         bg.save(cache_path, "PNG", quality=100)
-        print(f"✓ Thumbnail saved with color RGB{accent}")
+        print(f"✓ Thumbnail saved with color RGB{accent} | Progress: {progress_percent}%")
 
     except Exception as e:
         import traceback
