@@ -235,7 +235,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         base = Image.open(thumb_path).convert("RGBA")
         base = base.resize((1280, 720), Image.LANCZOS)
         base = ImageEnhance.Brightness(base).enhance(1.1)
-        bg = base.filter(ImageFilter.GaussianBlur(15))
+        bg = base.filter(ImageFilter.GaussianBlur(10))
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
         bg = Image.alpha_composite(bg, dark)
 
@@ -263,7 +263,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
              THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
             radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
         )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(15))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(10))
         bg = Image.alpha_composite(bg, shadow)
 
         # Thumbnail border with CLEAN GLOW
