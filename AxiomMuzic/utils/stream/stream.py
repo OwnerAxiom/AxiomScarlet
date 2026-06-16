@@ -12,6 +12,7 @@
 # ❤️ Made with dedication and love by AxiomBots
 # -----------------------------------------------
 import os
+import time
 from random import randint
 from typing import Union
 from pyrogram.types import InlineKeyboardMarkup
@@ -31,30 +32,29 @@ from pyrogram.types import InputMediaPhoto
 
 async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat_id, title, duration_min, user_name):
     """
-    Har 10 second mein thumbnail update karega with new color and progress
+    Real-time progress: Asli time ke hisab se thumbnail update karega
     """
     try:
         from AxiomMuzic.utils.thumbnails import get_thumb
         
-        # Total intervals calculate kar
-        intervals = duration_seconds // 5
+        # Agar duration galat hai toh animation mat chala
+        if duration_seconds <= 0:
+            return
+
+        # Start time record karo
+        start_time = time.time()
         
-        for i in range(intervals + 1):
-            progress = min(i * 15, 100)
+        while True:
+            # Asli time calculate karo
+            elapsed = time.time() - start_time
             
-            # Naya thumbnail generate kar (naye random color ke saath)
-            thumb_path = await get_thumb(videoid, progress_percent=progress, use_cache=False)
+            # Exact percentage nikalo (Real-time sync)
+            progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
             
-            if not thumb_path or thumb_path.endswith("logo.jpg"):
-                await asyncio.sleep(15)
-                continue
+            # Naya thumbnail generate karo exact % ke saath
+            thumb_path = await get_thumb(videoid, progress_percent=progress_percent, use_cache=False)
             
-            if i == 0:
-                # Pehla thumbnail - already send ho chuka hai, skip kar
-                await asyncio.sleep(15)
-                continue
-            else:
-                # Baad ke thumbnails - edit karo
+            if thumb_path and not thumb_path.endswith("logo.jpg"):
                 try:
                     await message.edit_media(
                         media=InputMediaPhoto(
@@ -68,14 +68,17 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
                         ),
                     )
                 except Exception as e:
-                    # Agar edit fail ho (message delete ho gaya), toh stop kar
                     error_str = str(e).lower()
                     if "message to edit not found" in error_str or "chat not found" in error_str:
                         break
-                    continue
-            
-            # 10 second wait kar
-            await asyncio.sleep(15)
+                    # Rate limit ya aur error ko ignore karke aage badho
+
+            # Agar 100% ho gaya toh loop tod do
+            if progress_percent >= 100:
+                break
+                
+            # Har 5 second mein update karo
+            await asyncio.sleep(5)
             
     except Exception as e:
         print(f"Animation error: {e}")
