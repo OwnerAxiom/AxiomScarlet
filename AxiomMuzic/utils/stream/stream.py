@@ -37,21 +37,21 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
         from AxiomMuzic.utils.thumbnails import get_thumb
         
         # Total intervals calculate kar
-        intervals = duration_seconds // 10
+        intervals = duration_seconds // 5
         
         for i in range(intervals + 1):
-            progress = min(i * 10, 100)
+            progress = min(i * 15, 100)
             
             # Naya thumbnail generate kar (naye random color ke saath)
             thumb_path = await get_thumb(videoid, progress_percent=progress, use_cache=False)
             
             if not thumb_path or thumb_path.endswith("logo.jpg"):
-                await asyncio.sleep(10)
+                await asyncio.sleep(15)
                 continue
             
             if i == 0:
                 # Pehla thumbnail - already send ho chuka hai, skip kar
-                await asyncio.sleep(10)
+                await asyncio.sleep(15)
                 continue
             else:
                 # Baad ke thumbnails - edit karo
@@ -75,7 +75,7 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
                     continue
             
             # 10 second wait kar
-            await asyncio.sleep(10)
+            await asyncio.sleep(15)
             
     except Exception as e:
         print(f"Animation error: {e}")
