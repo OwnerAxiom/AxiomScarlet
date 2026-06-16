@@ -1,5 +1,5 @@
 # -----------------------------------------------
-# 🔸 AxiomMusic Project - Enhanced Random Color Thumbnail
+# 🔸 AxiomMusic Project - Perfect Enhanced Thumbnail
 # 🔹 Developed & Maintained by: Axiom Bots
 # -----------------------------------------------
 
@@ -15,7 +15,7 @@ from config import YOUTUBE_IMG_URL
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-# 185+ Random Bright Colors (Unique)
+# 185+ Random Bright Colors
 COLOR_PALETTE = [
     (0, 230, 118), (124, 77, 255), (255, 23, 68), (255, 109, 0),
     (0, 176, 255), (255, 193, 7), (233, 30, 99), (0, 200, 150),
@@ -157,10 +157,11 @@ TITLE_X = THUMB_X + THUMB_SIZE + 60
 TITLE_Y = 180
 META_Y = TITLE_Y + 75
 VIEWS_Y = META_Y + 55
-EXTRA_Y = VIEWS_Y + 45  # New line for Player and Dev
+PLAYER_Y = VIEWS_Y + 55  # Same spacing as between Channel and Views
+DEV_Y = PLAYER_Y + 55    # Same spacing
 
 BAR_X = TITLE_X
-BAR_Y = EXTRA_Y + 45  # Below the extra text
+BAR_Y = DEV_Y + 55  # Same spacing below Dev
 BAR_WIDTH = 680
 BAR_HEIGHT = 8
 
@@ -169,12 +170,15 @@ MAX_TITLE_WIDTH = 700
 
 def trim_text(text, font, max_width):
     try:
-        if font.getlength(text) <= max_width:
-            return text
-        for i in range(len(text) - 1, 0, -1):
-            if font.getlength(text[:i] + "…") <= max_width:
-                return text[:i] + "…"
-        return "…"
+        if hasattr(font, 'getlength'):
+            if font.getlength(text) <= max_width:
+                return text
+            for i in range(len(text) - 1, 0, -1):
+                if font.getlength(text[:i] + "…") <= max_width:
+                    return text[:i] + "…"
+            return "…"
+        else:
+            return text[:60]
     except:
         return text[:60]
 
@@ -185,8 +189,6 @@ async def get_thumb(videoid: str) -> str:
         return cache_path
 
     thumb_path = os.path.join(CACHE_DIR, f"thumb_{videoid}.png")
-
-    # Pick random color
     accent = random.choice(COLOR_PALETTE)
 
     try:
@@ -224,15 +226,10 @@ async def get_thumb(videoid: str) -> str:
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
         bg = Image.alpha_composite(bg, dark)
 
-        # THICK OUTER BORDER (full image border)
+        # OUTER BORDER
         border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         bd = ImageDraw.Draw(border_layer)
-        border_thickness = 18
-        bd.rectangle(
-            (0, 0, 1279, 719),
-            outline=accent + (255,),
-            width=border_thickness
-        )
+        bd.rectangle((0, 0, 1279, 719), outline=accent, width=18)
         bg = Image.alpha_composite(bg, border_layer)
 
         # THUMBNAIL
@@ -245,39 +242,34 @@ async def get_thumb(videoid: str) -> str:
             (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
         )
 
-        # Thumbnail THICK shadow
+        # Thumbnail shadow
         shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         sd = ImageDraw.Draw(shadow)
-        # Multiple layers for thick shadow
-        for spread in [20, 15, 10, 5]:
-            alpha = 40 if spread == 20 else (70 if spread == 15 else (100 if spread == 10 else 140))
-            sd.rounded_rectangle(
-                (THUMB_X - spread, THUMB_Y - spread,
-                 THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
-                radius=THUMB_RADIUS + spread + 5, fill=(0, 0, 0, alpha)
-            )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(20))
+        sd.rounded_rectangle(
+            (THUMB_X - 8, THUMB_Y - 8,
+             THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
+            radius=THUMB_RADIUS + 10, fill=(0, 0, 0, 140)
+        )
+        shadow = shadow.filter(ImageFilter.GaussianBlur(15))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail colored border with STRONG GLOW
-        thumb_border = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        tbd = ImageDraw.Draw(thumb_border)
+        # Thumbnail border with CLEAN GLOW (random color)
+        thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+        tg = ImageDraw.Draw(thumb_glow)
         
-        # Outer glow layers
-        for spread in [18, 14, 10, 6, 2]:
-            alpha = 60 if spread >= 14 else (120 if spread >= 10 else (180 if spread >= 6 else 255))
-            tbd.rounded_rectangle(
+        # Outer glow (3 layers)
+        for spread, alpha in [(12, 80), (8, 140), (4, 200)]:
+            tg.rounded_rectangle(
                 (THUMB_X - spread, THUMB_Y - spread,
                  THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
                 radius=THUMB_RADIUS + spread,
                 outline=accent + (alpha,),
-                width=4
+                width=3
             )
         
-        # Inner glow/shadow (inside the border)
-        for inner in [2, 4, 6]:
-            alpha = 100 if inner == 2 else (70 if inner == 4 else 40)
-            tbd.rounded_rectangle(
+        # Inner glow (inside border - 2 layers)
+        for inner, alpha in [(3, 120), (6, 80)]:
+            tg.rounded_rectangle(
                 (THUMB_X + inner, THUMB_Y + inner,
                  THUMB_X + THUMB_SIZE - inner, THUMB_Y + THUMB_SIZE - inner),
                 radius=THUMB_RADIUS - inner,
@@ -285,8 +277,7 @@ async def get_thumb(videoid: str) -> str:
                 width=2
             )
         
-        bg = Image.alpha_composite(bg, thumb_border)
-
+        bg = Image.alpha_composite(bg, thumb_glow)
         bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
 
         # DRAWING
@@ -297,18 +288,16 @@ async def get_thumb(videoid: str) -> str:
             title_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 52)
             meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 32)
             time_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 28)
-            extra_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 26)  # For Player and Dev
-        except OSError:
+        except:
             title_font = ImageFont.load_default()
             meta_font = title_font
             time_font = title_font
-            extra_font = title_font
 
-        # Title - Bold white
+        # Title
         trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
         draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
 
-        # Artist
+        # Channel
         draw.text((TITLE_X, META_Y), f"Channel: {channel}",
                   fill=(200, 200, 200), font=meta_font)
 
@@ -316,46 +305,44 @@ async def get_thumb(videoid: str) -> str:
         draw.text((TITLE_X, VIEWS_Y), f"Views: {views}",
                   fill=(180, 180, 180), font=meta_font)
 
-        # Player and Dev info (NEW)
-        draw.text((TITLE_X, EXTRA_Y), "Player: @AxiomVcBot",
-                  fill=(190, 190, 190), font=extra_font)
-        draw.text((TITLE_X + 280, EXTRA_Y), "[Dev: Maanav]",
-                  fill=(170, 170, 170), font=extra_font)
+        # Player (NEW LINE)
+        draw.text((TITLE_X, PLAYER_Y), f"Player: @AxiomVcBot",
+                  fill=(190, 190, 190), font=meta_font)
+
+        # Dev (NEW LINE - NO BRACKETS)
+        draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
+                  fill=(170, 170, 170), font=meta_font)
 
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=8, fill=(80, 80, 80)
+            radius=6, fill=(70, 70, 70)
         )
 
-        # Progress fill (accent color) - CHANGED TO 20%
-        progress = int(BAR_WIDTH * 0.20)  # Changed from 0.70 to 0.20
+        # Progress fill (20%)
+        progress = int(BAR_WIDTH * 0.20)
         draw.rounded_rectangle(
             [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=8, fill=accent
+            radius=6, fill=accent
         )
 
-        # White circle indicator with STRONG GLOW and SHADOW
+        # Progress circle with CLEAN GLOW (random color)
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
-        # Shadow for circle
-        draw.ellipse([(cx - 16, cy - 16), (cx + 16, cy + 16)],
-                     fill=(0, 0, 0, 100))
-        
-        # Glow for circle
-        for glow_size in [22, 18, 14]:
-            alpha = 50 if glow_size == 22 else (80 if glow_size == 18 else 120)
-            draw.ellipse([(cx - glow_size, cy - glow_size), (cx + glow_size, cy + glow_size)],
+        # Glow layers (3 layers)
+        for glow_size, alpha in [(16, 70), (12, 120), (8, 180)]:
+            draw.ellipse([(cx - glow_size, cy - glow_size), 
+                         (cx + glow_size, cy + glow_size)],
                         fill=accent + (alpha,))
         
         # White circle
-        draw.ellipse([(cx - 10, cy - 10), (cx + 10, cy + 10)], fill="white")
+        draw.ellipse([(cx - 9, cy - 9), (cx + 9, cy + 9)], fill="white")
 
         # Times
-        draw.text((BAR_X, BAR_Y + 22), "0:00", fill=(220, 220, 220), font=time_font)
-        total = duration_text if not is_live else "3:45"
-        draw.text((bar_end - 50, BAR_Y + 22), total, fill=(220, 220, 220), font=time_font)
+        draw.text((BAR_X, BAR_Y + 20), "0:00", fill=(220, 220, 220), font=time_font)
+        total = duration_text if not is_live else "4:30"
+        draw.text((bar_end - 50, BAR_Y + 20), total, fill=(220, 220, 220), font=time_font)
 
         # SAVE
         bg = bg.convert("RGB")
