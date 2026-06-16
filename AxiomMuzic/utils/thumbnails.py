@@ -6,6 +6,7 @@
 import os
 import re
 import random
+import time
 import aiofiles
 import aiohttp
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
@@ -183,11 +184,21 @@ def trim_text(text, font, max_width):
         return text[:60]
 
 
-async def get_thumb(videoid: str, progress_percent: int = 0) -> str:
-    # Cache path includes progress for unique files
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}.png")
+async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True) -> str:
+    """
+    Generate thumbnail
     
-    if os.path.exists(cache_path):
+    Args:
+        videoid: YouTube video ID
+        progress_percent: Progress percentage (0-100)
+        use_cache: If False, always generate new thumbnail (for animation)
+    """
+    # Cache path includes progress and timestamp for uniqueness
+    timestamp = int(time.time()) if not use_cache else 0
+    cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
+    
+    # Only use cache if enabled and file exists
+    if use_cache and os.path.exists(cache_path):
         return cache_path
 
     thumb_path = os.path.join(CACHE_DIR, f"thumb_{videoid}.png")
@@ -288,6 +299,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0) -> str:
         # Fonts
         try:
             title_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 52)
+            axiom_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 30)
             meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 32)
             time_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 28)
         except:
@@ -297,23 +309,23 @@ async def get_thumb(videoid: str, progress_percent: int = 0) -> str:
 
         # Title
         trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
-        draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
+        draw.text((TITLE_X, TITLE_Y), trimmed, fill=accent, font=title_font)
 
         # Channel
         draw.text((TITLE_X, META_Y), f"Channel: {channel}",
-                  fill=(200, 200, 200), font=meta_font)
+                  fill=(200, 200, 200), font=axiom_font)
 
         # Views
         draw.text((TITLE_X, VIEWS_Y), f"Views: {views}",
-                  fill=(180, 180, 180), font=meta_font)
+                  fill=(180, 180, 180), font=axiom_font)
 
         # Player
         draw.text((TITLE_X, PLAYER_Y), f"Player: @AxiomVcBot",
-                  fill=(190, 190, 190), font=title_font)
+                  fill=(190, 190, 190), font=axiom_font)
 
         # Dev
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
-                  fill=(170, 170, 170), font=title_font)
+                  fill=(170, 170, 170), font=axiom_font)
 
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
@@ -343,7 +355,6 @@ async def get_thumb(videoid: str, progress_percent: int = 0) -> str:
 
         # Calculate current time based on progress
         try:
-            # Parse duration (format: "MM:SS" or "HH:MM:SS")
             if duration and ":" in str(duration):
                 parts = str(duration).split(":")
                 if len(parts) == 2:
