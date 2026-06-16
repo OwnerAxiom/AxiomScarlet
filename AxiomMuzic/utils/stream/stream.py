@@ -25,6 +25,55 @@ from AxiomMuzic.utils.inline import aq_markup, close_markup, stream_markup
 from AxiomMuzic.utils.pastebin import AxiomBin
 from AxiomMuzic.utils.stream.queue import put_queue, put_queue_index
 from AxiomMuzic.utils.thumbnails import get_thumb
+import asyncio
+from pyrogram.types import InputMediaPhoto
+
+
+async def animate_thumbnail_progress(message, videoid, duration_seconds, chat_id, title, duration_min, user_name):
+    """
+    Har 10 second mein thumbnail update karega with new color and progress
+    """
+    try:
+        from AxiomMuzic.utils.thumbnails import get_thumb
+        
+        # Total intervals calculate kar
+        intervals = duration_seconds // 10
+        
+        for i in range(intervals + 1):
+            progress = min(i * 10, 100)
+            
+            # Naya thumbnail generate kar (naye random color ke saath)
+            thumb_path = await get_thumb(videoid, progress_percent=progress)
+            
+            if not thumb_path or thumb_path.endswith("logo.jpg"):
+                await asyncio.sleep(10)
+                continue
+            
+            if i == 0:
+                # Pehla thumbnail - already send ho chuka hai, skip kar
+                await asyncio.sleep(10)
+                continue
+            else:
+                # Baad ke thumbnails - edit karo
+                try:
+                    await message.edit_media(
+                        media=InputMediaPhoto(
+                            media=thumb_path,
+                            caption=f"https://t.me/{app.username}?start=info_{videoid}\n\n🎵 **{title[:23]}**\n⏱️ {duration_min} | 👤 {user_name}",
+                        ),
+                    )
+                except Exception as e:
+                    # Agar edit fail ho (message delete ho gaya), toh stop kar
+                    error_str = str(e).lower()
+                    if "message to edit not found" in error_str or "chat not found" in error_str:
+                        break
+                    continue
+            
+            # 10 second wait kar
+            await asyncio.sleep(10)
+            
+    except Exception as e:
+        print(f"Animation error: {e}")
 
 
 async def stream(
@@ -124,6 +173,21 @@ async def stream(
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
+                
+                # Animation start kar (background task)
+                try:
+                    parts = duration_min.split(":")
+                    if len(parts) == 2:
+                        duration_sec = int(parts[0]) * 60 + int(parts[1])
+                    elif len(parts) == 3:
+                        duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                    else:
+                        duration_sec = 180
+                    asyncio.create_task(
+                        animate_thumbnail_progress(run, vidid, duration_sec, chat_id, title, duration_min, user_name)
+                    )
+                except Exception as e:
+                    print(f"Failed to start animation: {e}")
         if count == 0:
             return
         else:
@@ -210,6 +274,21 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "stream"
+            
+            # Animation start kar (background task)
+            try:
+                parts = duration_min.split(":")
+                if len(parts) == 2:
+                    duration_sec = int(parts[0]) * 60 + int(parts[1])
+                elif len(parts) == 3:
+                    duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                else:
+                    duration_sec = 180
+                asyncio.create_task(
+                    animate_thumbnail_progress(run, vidid, duration_sec, chat_id, title, duration_min, user_name)
+                )
+            except Exception as e:
+                print(f"Failed to start animation: {e}")
     elif streamtype == "soundcloud":
         file_path = result["filepath"]
         title = result["title"]
