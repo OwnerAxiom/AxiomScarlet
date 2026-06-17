@@ -148,28 +148,29 @@ COLOR_PALETTE = [
     (245, 0, 255), (250, 0, 255),
 ]
 
-# Layout - FIXED
+# Layout - TEXT SAB UPER, BAR NICHE
+# Layout - TEXT UPER, BAR NICHE, RIGHT SIDE SE BHI SAFE
 THUMB_SIZE = 420
 THUMB_X = 60
 THUMB_Y = (720 - THUMB_SIZE) // 2
 THUMB_RADIUS = 50
 
-TITLE_X = THUMB_X + THUMB_SIZE + 35
-TITLE_Y = 180
-META_Y = TITLE_Y + 75
-VIEWS_Y = META_Y + 55
-PLAYER_Y = VIEWS_Y + 55
-DEV_Y = PLAYER_Y + 55
-REQUESTED_Y = DEV_Y + 55
+TITLE_X = THUMB_X + THUMB_SIZE + 45  # 35 se 45 kar diya (aur right)
+TITLE_Y = THUMB_Y + 15
+META_Y = TITLE_Y + 60
+VIEWS_Y = META_Y + 50
+PLAYER_Y = VIEWS_Y + 50
+DEV_Y = PLAYER_Y + 50
+REQUESTED_Y = DEV_Y + 50
 
-BAR_X = TITLE_X
-BAR_Y = REQUESTED_Y + 75  # Aur niche
-BAR_WIDTH = 680
+BAR_X = TITLE_X  # Same as title
+BAR_Y = REQUESTED_Y + 80
+BAR_WIDTH = 650  # 680 se 650 kar diya (thoda chhota)
 BAR_HEIGHT = 8
 
 TIME_Y = BAR_Y + 35
 
-MAX_TITLE_WIDTH = 700
+MAX_TITLE_WIDTH = 650  # 700 se 650 kar diya (trim from right)
 
 
 def trim_text(text, font, max_width):
@@ -237,9 +238,27 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         bg = Image.alpha_composite(bg, dark)
 
         # OUTER BORDER
+        # OUTER BORDER (Thin + 15 Layer Inner Fade Glow)
         border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         bd = ImageDraw.Draw(border_layer)
-        bd.rectangle((0, 0, 1279, 719), outline=accent, width=18)
+        
+        # 1. Thin solid outer border (18 se 6 kar diya)
+        bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
+        
+        # 2. 15 Layer Inner Glow (Border se andar ki taraf fade)
+        inner_glow_layers = [
+            (8, 245), (12, 225), (17, 205), (22, 185), (28, 165),
+            (34, 145), (41, 125), (48, 105), (56, 85), (64, 70),
+            (73, 55), (82, 40), (92, 25), (102, 15), (113, 5)
+        ]
+        
+        for inset, alpha in inner_glow_layers:
+            bd.rectangle(
+                (inset, inset, 1279 - inset, 719 - inset),
+                outline=accent + (alpha,),
+                width=3
+            )
+            
         bg = Image.alpha_composite(bg, border_layer)
 
         # THUMBNAIL
