@@ -148,28 +148,28 @@ COLOR_PALETTE = [
     (245, 0, 255), (250, 0, 255),
 ]
 
-# Layout - TEXT UPER, BAR NICHE, RIGHT SIDE SE BHI SAFE
+# Layout - IMPROVED SPACING & CENTERING
 THUMB_SIZE = 420
 THUMB_X = 60
 THUMB_Y = (720 - THUMB_SIZE) // 2
 THUMB_RADIUS = 50
 
-TITLE_X = THUMB_X + THUMB_SIZE + 45
-TITLE_Y = THUMB_Y + 15
-META_Y = TITLE_Y + 60
-VIEWS_Y = META_Y + 50
-PLAYER_Y = VIEWS_Y + 50
-DEV_Y = PLAYER_Y + 50
-REQUESTED_Y = DEV_Y + 50
+TITLE_X = THUMB_X + THUMB_SIZE + 50  # 45 se 50 kar diya
+TITLE_Y = THUMB_Y + 20  # 15 se 20 kar diya
+META_Y = TITLE_Y + 75  # 60 se 75 kar diya - Title aur Channel ke beech zyada gap
+VIEWS_Y = META_Y + 55  # 50 se 55 kar diya
+PLAYER_Y = VIEWS_Y + 55  # 50 se 55 kar diya
+DEV_Y = PLAYER_Y + 55  # 50 se 55 kar diya
+REQUESTED_Y = DEV_Y + 55  # 50 se 55 kar diya
 
 BAR_X = TITLE_X
-BAR_Y = REQUESTED_Y + 80
-BAR_WIDTH = 650
+BAR_Y = REQUESTED_Y + 85  # 80 se 85 kar diya
+BAR_WIDTH = 630  # 650 se 630 kar diya - right side se safe
 BAR_HEIGHT = 8
 
 TIME_Y = BAR_Y + 35
 
-MAX_TITLE_WIDTH = 650
+MAX_TITLE_WIDTH = 630  # 650 se 630 kar diya - overlap se bachne ke liye
 
 
 def trim_text(text, font, max_width):
@@ -236,39 +236,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
         bg = Image.alpha_composite(bg, dark)
 
-        # OUTER BORDER (Thin + 15 Layer Inner Smooth Glow - Thumbnail Jaisa)
-        # border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        # bd = ImageDraw.Draw(border_layer)
-        
-        # # 1. Thin solid outer border
-        # bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
-        
-        # # 2. 15 Layer Inner Glow - Thumbnail jaisa smooth fade
-        # # (inset, alpha) - inset border ke andar ki doori
-        # inner_glow_params = [
-        #     (6, 250), (9, 235), (12, 220), (16, 200), (20, 180),
-        #     (25, 160), (30, 140), (36, 120), (42, 100), (49, 80),
-        #     (56, 65), (64, 50), (72, 38), (81, 28), (90, 20)
-        # ]
-        
-        # for inset, alpha in inner_glow_params:
-        #     bd.rectangle(
-        #         (inset, inset, 1279 - inset, 719 - inset),
-        #         outline=accent + (alpha,),
-        #         width=2  # 3 se 2 kar diya - smooth ke liye
-        #     )
-            
-        # bg = Image.alpha_composite(bg, border_layer)
-                # OUTER BORDER - Simple Solid Border
-        # border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        # bd = ImageDraw.Draw(border_layer)
-        
-        # # Simple solid border (width 6)
-        # bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
-            
-        # bg = Image.alpha_composite(bg, border_layer)
-
-                # OUTER BORDER - 16 Layer Inner Smooth Glow (Thumbnail Jaisa)
+        # OUTER BORDER - 16 Layer Inner Smooth Glow (Thumbnail Jaisa)
         border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         bd = ImageDraw.Draw(border_layer)
         
@@ -276,8 +244,6 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
         
         # 2. 16 Layer Inner Glow - Thumbnail jaisa smooth fade (andar ki taraf)
-        # (inset, alpha) - inset border ke andar ki doori
-        # Alpha 250 se 15 tak (bahar se andar fade)
         inner_glow_params = [
             (2, 250), (4, 235), (6, 218), (8, 195), (10, 172),
             (12, 150), (14, 130), (16, 112), (18, 95), (20, 80),
@@ -293,7 +259,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             
         bg = Image.alpha_composite(bg, border_layer)
 
-        # THUMBNAIL - IMPORTANT: Ye section missing tha!
+        # THUMBNAIL
         thumb_img = Image.open(thumb_path).convert("RGBA")
         thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
         thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
