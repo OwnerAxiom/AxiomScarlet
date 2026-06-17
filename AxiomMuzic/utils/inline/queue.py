@@ -1,4 +1,3 @@
------------------------------------------------
 # 🔸 AxiomMusic Project
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
 # 📅 Copyright © 2026 – All Rights Reserved
