@@ -31,31 +31,34 @@ from pyrogram.types import InputMediaPhoto
 
 
 async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat_id, title, duration_min, user_name):
-    """
-    Real-time progress: Asli time ke hisab se thumbnail update karega
-    """
+    print(f"🎬 Animation started for: {videoid}")
+    print(f"⏱️ Duration: {duration_seconds}s")
+    
     try:
         from AxiomMuzic.utils.thumbnails import get_thumb
         
-        # Agar duration galat hai toh animation mat chala
-        if duration_seconds <= 0:
-            return
-
-        # Start time record karo
-        start_time = time.time()
+        intervals = duration_seconds // 5
         
-        while True:
-            # Asli time calculate karo
-            elapsed = time.time() - start_time
+        for i in range(intervals + 1):
+            progress = min(i * 5, 100)
             
-            # Exact percentage nikalo (Real-time sync)
-            progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
+            print(f"🔄 [{i}/{intervals}] Generating thumbnail - {progress}%")
             
-            # Naya thumbnail generate karo exact % ke saath
             thumb_path = await get_thumb(videoid, progress_percent=progress, use_cache=False, user_name=user_name)
+            print(f"📸 Thumbnail path: {thumb_path}")
             
-            if thumb_path and not thumb_path.endswith("logo.jpg"):
+            if not thumb_path or thumb_path.endswith("logo.jpg"):
+                print("⚠️ Invalid thumbnail, skipping...")
+                await asyncio.sleep(5)
+                continue
+            
+            if i == 0:
+                print("⏸️ Skipping first update (already sent)")
+                await asyncio.sleep(5)
+                continue
+            else:
                 try:
+                    print(f"✏️ Editing message with {progress}% progress")
                     await message.edit_media(
                         media=InputMediaPhoto(
                             media=thumb_path,
@@ -67,21 +70,21 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
                             ),
                         ),
                     )
+                    print("✅ Message edited successfully")
                 except Exception as e:
+                    print(f"❌ Edit failed: {e}")
                     error_str = str(e).lower()
                     if "message to edit not found" in error_str or "chat not found" in error_str:
+                        print("🛑 Stopping animation - message deleted")
                         break
-                    # Rate limit ya aur error ko ignore karke aage badho
-
-            # Agar 100% ho gaya toh loop tod do
-            if progress_percent >= 100:
-                break
-                
-            # Har 5 second mein update karo
+                    continue
+            
             await asyncio.sleep(5)
             
     except Exception as e:
-        print(f"Animation error: {e}")
+        print(f"💥 Animation error: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 async def stream(
@@ -166,6 +169,9 @@ async def stream(
                     "video" if video else "audio",
                     forceplay=forceplay,
                 )
+                print(f"🎨 Generating thumbnail for: {vidid}")
+                print(f" Requested by: {user_name}")
+                
                 img = await get_thumb(vidid, user_name=user_name if user_name else "AxiomUser")
                 button = stream_markup(_, chat_id)
                 run = await app.send_photo(
@@ -182,7 +188,6 @@ async def stream(
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
                 
-                # Animation start kar (background task)
                 try:
                     parts = duration_min.split(":")
                     if len(parts) == 2:
@@ -267,6 +272,9 @@ async def stream(
                 "video" if video else "audio",
                 forceplay=forceplay,
             )
+            print(f"🎨 Generating thumbnail for: {vidid}")
+            print(f" Requested by: {user_name}")
+
             img = await get_thumb(vidid, user_name=user_name if user_name else "AxiomUser")
             button = stream_markup(_, chat_id)
             run = await app.send_photo(
@@ -283,7 +291,6 @@ async def stream(
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "stream"
             
-            # Animation start kar (background task)
             try:
                 parts = duration_min.split(":")
                 if len(parts) == 2:
@@ -450,6 +457,9 @@ async def stream(
                 "video" if video else "audio",
                 forceplay=forceplay,
             )
+            print(f"🎨 Generating thumbnail for: {vidid}")
+            print(f" Requested by: {user_name}")
+            
             img = await get_thumb(vidid, user_name=user_name if user_name else "AxiomUser")
             button = stream_markup(_, chat_id)
             run = await app.send_photo(
@@ -467,7 +477,7 @@ async def stream(
             db[chat_id][0]["markup"] = "tg"
     elif streamtype == "index":
         link = result
-        title = "ɪɴᴅᴇx ᴏʀ ᴍ3ᴜ8 ʟɪɴᴋ"
+        title = "ɪɴᴅᴇx ʀ ᴍ38 ʟɪɴᴋ"
         duration_min = "00:00"
         if await is_active_chat(chat_id):
             await put_queue_index(
