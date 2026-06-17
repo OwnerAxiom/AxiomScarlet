@@ -327,25 +327,27 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         # Requested By - unidecode ke saath
         # Requested By - with fallback chain
         # Requested By - "Requested By:" gray, naam accent color mein
+        # Requested By section mein:
         try:
             from unidecode import unidecode
-            clean_name = unidecode(str(user_name))
+            # HTML tags remove kar
+            clean_name = re.sub(r'<[^>]+>', '', str(user_name))
+            clean_name = unidecode(clean_name).strip()
         except:
-            clean_name = str(user_name)
+            clean_name = re.sub(r'<[^>]+>', '', str(user_name)).strip()
         
-        if not clean_name or clean_name.strip() == "":
+        if not clean_name:
             clean_name = "AxiomUser"
-
-        # Pehle "Requested By: " gray color mein
-        prefix_text = "Requested By: "
+        
+        # "Requested By: " gray mein
+        prefix_text = "Requested By | "
         draw.text((TITLE_X, REQUESTED_Y), prefix_text, 
                   fill=(190, 190, 190), font=axiom_font)
         
-        # Phir naam accent color mein (prefix ke baad)
+        # Naam accent color mein
         prefix_width = axiom_font.getlength(prefix_text)
         draw.text((TITLE_X + prefix_width, REQUESTED_Y), clean_name, 
                   fill=accent, font=axiom_font)
-
         # Progress bar background
         bar_end = BAR_X + BAR_WIDTH
         draw.rounded_rectangle(
