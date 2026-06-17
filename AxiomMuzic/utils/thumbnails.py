@@ -1,8 +1,3 @@
-# -----------------------------------------------
-# 🔸 AxiomMusic Project - Animated Enhanced Thumbnail
-# 🔹 Developed & Maintained by: Axiom Bots
-# -----------------------------------------------
-
 import os
 import re
 import random
@@ -232,7 +227,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         base = Image.open(thumb_path).convert("RGBA")
         base = base.resize((1280, 720), Image.LANCZOS)
         base = ImageEnhance.Brightness(base).enhance(1.1)
-        bg = base.filter(ImageFilter.GaussianBlur(40))
+        bg = base.filter(ImageFilter.GaussianBlur(50))
         dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
         bg = Image.alpha_composite(bg, dark)
 
