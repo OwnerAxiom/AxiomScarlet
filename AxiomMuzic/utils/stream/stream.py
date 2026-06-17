@@ -52,7 +52,7 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
             progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
             
             # Naya thumbnail generate karo exact % ke saath
-            thumb_path = await get_thumb(videoid, progress_percent=progress_percent, use_cache=False)
+            thumb_path = await get_thumb(videoid, progress_percent=progress, use_cache=False, user_name=user_name)
             
             if thumb_path and not thumb_path.endswith("logo.jpg"):
                 try:
