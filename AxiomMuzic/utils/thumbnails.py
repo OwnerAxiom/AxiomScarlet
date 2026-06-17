@@ -237,26 +237,34 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         bg = Image.alpha_composite(bg, dark)
 
         # OUTER BORDER (Thin + 15 Layer Inner Smooth Glow - Thumbnail Jaisa)
+        # border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+        # bd = ImageDraw.Draw(border_layer)
+        
+        # # 1. Thin solid outer border
+        # bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
+        
+        # # 2. 15 Layer Inner Glow - Thumbnail jaisa smooth fade
+        # # (inset, alpha) - inset border ke andar ki doori
+        # inner_glow_params = [
+        #     (6, 250), (9, 235), (12, 220), (16, 200), (20, 180),
+        #     (25, 160), (30, 140), (36, 120), (42, 100), (49, 80),
+        #     (56, 65), (64, 50), (72, 38), (81, 28), (90, 20)
+        # ]
+        
+        # for inset, alpha in inner_glow_params:
+        #     bd.rectangle(
+        #         (inset, inset, 1279 - inset, 719 - inset),
+        #         outline=accent + (alpha,),
+        #         width=2  # 3 se 2 kar diya - smooth ke liye
+        #     )
+            
+        # bg = Image.alpha_composite(bg, border_layer)
+                # OUTER BORDER - Simple Solid Border
         border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         bd = ImageDraw.Draw(border_layer)
         
-        # 1. Thin solid outer border
+        # Simple solid border (width 6)
         bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
-        
-        # 2. 15 Layer Inner Glow - Thumbnail jaisa smooth fade
-        # (inset, alpha) - inset border ke andar ki doori
-        inner_glow_params = [
-            (6, 250), (9, 235), (12, 220), (16, 200), (20, 180),
-            (25, 160), (30, 140), (36, 120), (42, 100), (49, 80),
-            (56, 65), (64, 50), (72, 38), (81, 28), (90, 20)
-        ]
-        
-        for inset, alpha in inner_glow_params:
-            bd.rectangle(
-                (inset, inset, 1279 - inset, 719 - inset),
-                outline=accent + (alpha,),
-                width=2  # 3 se 2 kar diya - smooth ke liye
-            )
             
         bg = Image.alpha_composite(bg, border_layer)
 
