@@ -160,6 +160,7 @@ META_Y = TITLE_Y + 75
 VIEWS_Y = META_Y + 55
 PLAYER_Y = VIEWS_Y + 55
 DEV_Y = PLAYER_Y + 55
+REQUESTED_Y = DEV_Y + 55  # NEW LINE ADD KAR
 
 BAR_X = TITLE_X
 BAR_Y = DEV_Y + 75  # MOVED DOWN (pehle 55 tha)
@@ -184,15 +185,7 @@ def trim_text(text, font, max_width):
         return text[:60]
 
 
-async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True) -> str:
-    """
-    Generate thumbnail
-    
-    Args:
-        videoid: YouTube video ID
-        progress_percent: Progress percentage (0-100)
-        use_cache: If False, always generate new thumbnail (for animation)
-    """
+async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True, user_name: str = "Unknown") -> str:
     # Cache path includes progress and timestamp for uniqueness
     timestamp = int(time.time()) if not use_cache else 0
     cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
@@ -326,6 +319,22 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
 
         # Dev - LIGHT GRAY
         draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
+                  fill=(190, 190, 190), font=axiom_font)
+
+        # Requested By - LIGHT GRAY (unidecode ke saath)
+        # Requested By - unidecode ke saath
+        # Requested By - with fallback chain
+        try:
+            from unidecode import unidecode
+            display_name = unidecode(user_name or "")
+        except:
+            display_name = user_name or ""
+        
+        # Final fallback
+        if not display_name.strip():
+            display_name = "AxiomUser"
+        
+        draw.text((TITLE_X, REQUESTED_Y), f"Requested By: {display_name}",
                   fill=(190, 190, 190), font=axiom_font)
 
         # Progress bar background
