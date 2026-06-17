@@ -163,9 +163,11 @@ DEV_Y = PLAYER_Y + 55
 REQUESTED_Y = DEV_Y + 55  # NEW LINE ADD KAR
 
 BAR_X = TITLE_X
-BAR_Y = DEV_Y + 75  # MOVED DOWN (pehle 55 tha)
+BAR_Y = DEV_Y + 95  # MOVED DOWN (pehle 55 tha)
 BAR_WIDTH = 680
 BAR_HEIGHT = 8
+
+TIME_Y = BAR_Y + 35  # Time bar ke niche
 
 MAX_TITLE_WIDTH = 700
 
@@ -185,7 +187,7 @@ def trim_text(text, font, max_width):
         return text[:60]
 
 
-async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True, user_name: str = "Unknown") -> str:
+async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True, user_name: str = "AxiomUser") -> str:
     # Cache path includes progress and timestamp for uniqueness
     timestamp = int(time.time()) if not use_cache else 0
     cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
@@ -334,7 +336,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         if not display_name.strip():
             display_name = "AxiomUser"
         
-        draw.text((TITLE_X, REQUESTED_Y), f"Requested By: {display_name}",
+        draw.text((TITLE_X, REQUESTED_Y), f"Requested By | {display_name}",
                   fill=(190, 190, 190), font=axiom_font)
 
         # Progress bar background
@@ -385,9 +387,10 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
             current_time = "0:00"
 
         # Times - LIGHT GRAY
-        draw.text((BAR_X, BAR_Y + 20), current_time, fill=(200, 200, 200), font=time_font)  
+        # Times - LIGHT GRAY (bar ke niche)
+        draw.text((BAR_X, TIME_Y), current_time, fill=(200, 200, 200), font=time_font)  
         total = duration_text if not is_live else "LIVE"
-        draw.text((bar_end - 50, BAR_Y + 20), total, fill=(200, 200, 200), font=time_font)  
+        draw.text((bar_end - 50, TIME_Y), total, fill=(200, 200, 200), font=time_font) 
 
         # SAVE
         bg = bg.convert("RGB")
