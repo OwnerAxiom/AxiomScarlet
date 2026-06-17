@@ -1,4 +1,4 @@
-# -----------------------------------------------
+-----------------------------------------------
 # 🔸 AxiomMusic Project
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
 # 📅 Copyright © 2026 – All Rights Reserved
@@ -11,17 +11,17 @@
 #
 # ❤️ Made with dedication and love by AxiomBots
 # -----------------------------------------------
-import random
+
 from typing import Union
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from AxiomMuzic import app
 
-def random_style():
-    return random.choice([
-        ButtonStyle.SUCCESS,
-        ButtonStyle.DANGER,
-        ButtonStyle.PRIMARY
-    ])
+
+
+
+
+
+
 
 
 def queue_markup(
@@ -87,16 +87,20 @@ def queue_back_markup(_, CPLAY):
 def aq_markup(_, chat_id):
     buttons = [
         [
-            InlineKeyboardButton(text=_["S_B_3"], url=f"https://t.me/{app.username}?startgroup=true", style=random_style()),
+            InlineKeyboardButton(text=_["S_B_3"], url=f"https://t.me/{app.username}?startgroup=true",)
         ],
         [
-            InlineKeyboardButton(text="▷", callback_data=f"ADMIN Resume|{chat_id}", style=random_style()),
-            InlineKeyboardButton(text="II", callback_data=f"ADMIN Pause|{chat_id}", style=random_style()),
-            InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}", style=random_style()),
-            InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}", style=random_style()),
+            InlineKeyboardButton(text="• ʀᴇsᴜᴍᴇ •", callback_data=f"ADMIN Resume|{chat_id}"),
+            InlineKeyboardButton(text="• ᴘᴀᴜsᴇ •", callback_data=f"ADMIN Pause|{chat_id}"),
         ],
         [
-            InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close", style=random_style()),
+            InlineKeyboardButton(text="• sᴋɪᴘ •", callback_data=f"ADMIN Skip|{chat_id}"),
+            InlineKeyboardButton(text="• sᴛᴏᴘ •", callback_data=f"ADMIN Stop|{chat_id}"),
+
+
+        ],
+        [
+            InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")
         ],
     ]
     return buttons
