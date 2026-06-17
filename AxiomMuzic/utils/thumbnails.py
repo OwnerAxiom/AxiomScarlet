@@ -354,17 +354,18 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         )
 
         # Progress circle with SOFTER GRADIENT SHADOW (fade effect)
+        # Progress circle with VERY SOFT FADE
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
-        # Soft gradient - bahut zyada layers for smooth fade
-        for glow_size, alpha in [(35, 20), (28, 40), (22, 70), (16, 110), (10, 160), (6, 210), (3, 250)]:
+        # Bahut soft gradient - kam layers, kam size
+        for glow_size, alpha in [(20, 30), (14, 60), (9, 100), (5, 150)]:
             draw.ellipse([(cx - glow_size, cy - glow_size), 
                          (cx + glow_size, cy + glow_size)],
                         fill=accent + (alpha,))
         
-        # Center circle - white with slight transparency
-        draw.ellipse([(cx - 11, cy - 11), (cx + 11, cy + 11)], fill="white")
-        draw.ellipse([(cx - 6, cy - 6), (cx + 6, cy + 6)], fill=(245, 245, 245))
+        # Center circle - chhota aur soft
+        draw.ellipse([(cx - 7, cy - 7), (cx + 7, cy + 7)], fill=(220, 220, 220))
+        draw.ellipse([(cx - 4, cy - 4), (cx + 4, cy + 4)], fill="white")
 
         # Calculate current time
         try:
