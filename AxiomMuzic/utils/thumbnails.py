@@ -189,6 +189,9 @@ def trim_text(text, font, max_width):
 
 async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True, user_name: str = "AxiomUser") -> str:
     print(f"📥 get_thumb called with videoid: {videoid}, progress: {progress_percent}%")
+
+    use_cache = False
+    
     timestamp = int(time.time()) if not use_cache else 0
     cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
     
@@ -260,19 +263,21 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         shadow = shadow.filter(ImageFilter.GaussianBlur(25))
         bg = Image.alpha_composite(bg, shadow)
 
-        # Thumbnail border with SOFT GRADIENT SHADOW
+        # Thumbnail border with 8 LAYERS SOFT GRADIENT
         thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
         tg = ImageDraw.Draw(thumb_glow)
         
-        for spread, alpha in [(25, 40), (20, 70), (15, 110), (10, 160), (6, 200), (3, 240)]:
+        # 8 layers - bahar se andar fade
+        for spread, alpha in [(28, 25), (24, 45), (20, 70), (16, 100), (12, 135), (8, 175), (5, 215), (2, 245)]:
             tg.rounded_rectangle(
                 (THUMB_X - spread, THUMB_Y - spread,
                  THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
                 radius=THUMB_RADIUS + spread,
                 outline=accent + (alpha,),
-                width=5
+                width=4
             )
         
+        # Inner glow (inside border)
         for inner, alpha in [(3, 120), (6, 80)]:
             tg.rounded_rectangle(
                 (THUMB_X + inner, THUMB_Y + inner,
@@ -355,17 +360,18 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
 
         # Progress circle with SOFTER GRADIENT SHADOW (fade effect)
         # Progress circle with VERY SOFT FADE
+        # Progress circle with 8 LAYERS SOFT FADE
         cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
         
-        # Bahut soft gradient - kam layers, kam size
-        for glow_size, alpha in [(20, 30), (14, 60), (9, 100), (5, 150)]:
+        # 8 layers - center se bahar fade
+        for glow_size, alpha in [(22, 20), (18, 40), (14, 65), (10, 95), (7, 130), (4, 170), (2, 210), (1, 245)]:
             draw.ellipse([(cx - glow_size, cy - glow_size), 
                          (cx + glow_size, cy + glow_size)],
                         fill=accent + (alpha,))
         
         # Center circle - chhota aur soft
-        draw.ellipse([(cx - 7, cy - 7), (cx + 7, cy + 7)], fill=(220, 220, 220))
-        draw.ellipse([(cx - 4, cy - 4), (cx + 4, cy + 4)], fill="white")
+        draw.ellipse([(cx - 5, cy - 5), (cx + 5, cy + 5)], fill="white")
+        draw.ellipse([(cx - 3, cy - 3), (cx + 3, cy + 3)], fill=(240, 240, 240))
 
         # Calculate current time
         try:
