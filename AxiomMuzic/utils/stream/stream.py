@@ -40,6 +40,18 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
         intervals = duration_seconds // 5
         
         for i in range(intervals + 1):
+            # Check karo ki task cancel toh nahi hua
+            try:
+                if asyncio.current_task().cancelled():
+                    print(f"✅ Animation cancelled for {videoid}")
+                    try:
+                        await message.delete()
+                    except:
+                        pass
+                    return
+            except:
+                pass
+            
             progress = min(i * 5, 100)
             
             print(f"🔄 [{i}/{intervals}] Generating thumbnail - {progress}%")
@@ -81,6 +93,12 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
             
             await asyncio.sleep(5)
             
+    except asyncio.CancelledError:
+        print(f"✅ Animation task cancelled for {videoid}")
+        try:
+            await message.delete()
+        except:
+            pass
     except Exception as e:
         print(f"💥 Animation error: {e}")
         import traceback
@@ -196,9 +214,13 @@ async def stream(
                         duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
                     else:
                         duration_sec = 180
-                    asyncio.create_task(
+                    
+                    # Animation task ko store kar
+                    animation_task = asyncio.create_task(
                         animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
                     )
+                    db[chat_id][0]["animation_task"] = animation_task
+                    
                 except Exception as e:
                     print(f"Failed to start animation: {e}")
         if count == 0:
@@ -299,9 +321,13 @@ async def stream(
                     duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
                 else:
                     duration_sec = 180
-                asyncio.create_task(
+                
+                # Animation task ko store kar
+                animation_task = asyncio.create_task(
                     animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
                 )
+                db[chat_id][0]["animation_task"] = animation_task
+                
             except Exception as e:
                 print(f"Failed to start animation: {e}")
     elif streamtype == "soundcloud":
