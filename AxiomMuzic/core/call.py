@@ -2,14 +2,6 @@
 # 🔸 AxiomMusic Project
 # 🔹 Developed & Maintained by: Axiom Bots (https://t.me/axiombots)
 # 📅 Copyright © 2026 – All Rights Reserved
-#
-# 📖 License:
-# This source code is open for educational and non-commercial use ONLY.
-# You are required to retain this credit in all copies or substantial portions of this file.
-# Commercial use, redistribution, or removal of this notice is strictly prohibited
-# without prior written permission from the author.
-#
-# ❤️ Made with dedication and love by AxiomBots
 # -----------------------------------------------
 import asyncio
 import os
@@ -53,8 +45,24 @@ async def _clear_(chat_id: int):
     if chat_id in db and len(db[chat_id]) > 0:
         if "animation_task" in db[chat_id][0]:
             try:
-                db[chat_id][0]["animation_task"].cancel()
-                print(f"✅ Animation task cancelled for chat {chat_id}")
+                task = db[chat_id][0]["animation_task"]
+                if not task.done():
+                    task.cancel()
+                    print(f"✅ Animation task cancelled for chat {chat_id}")
+                    try:
+                        await asyncio.wait_for(task, timeout=2.0)
+                    except asyncio.CancelledError:
+                        print(f"✅ Task successfully cancelled")
+                    except asyncio.TimeoutError:
+                        print(f"⚠️ Task cancellation timeout")
+            except Exception as e:
+                print(f"❌ Error cancelling task: {e}")
+        
+        # Thumbnail message delete kar
+        if "mystic" in db[chat_id][0]:
+            try:
+                await db[chat_id][0]["mystic"].delete()
+                print(f"✅ Thumbnail message deleted")
             except:
                 pass
     
@@ -251,6 +259,9 @@ class Call(PyTgCalls):
             db[chat_id][0]["speed"] = speed
 
     async def force_stop_stream(self, chat_id: int):
+        # Pehle animation cancel kar
+        await _clear_(chat_id)
+        
         assistant = await group_assistant(self, chat_id)
         try:
             check = db.get(chat_id)
@@ -431,7 +442,7 @@ class Call(PyTgCalls):
                             [
                                 [
                                     InlineKeyboardButton(
-                                        "✙ ʌᴅᴅ є вᴧʙʏ ✙",
+                                        "✙ ʌᴅᴅ ϻє вᴧʙʏ ✙",
                                         url=f"https://t.me/{app.username}?startgroup=true",
                                     ),
                                     InlineKeyboardButton(
@@ -440,7 +451,7 @@ class Call(PyTgCalls):
                                 ],
                                 [
                                     InlineKeyboardButton(
-                                        text=_["⌯ ᴅєᴠєʟᴏᴘєꝛ​ ⌯"],
+                                        text=_["⌯ єᴠєʟᴏᴘєꝛ ⌯"],
                                         user_id=config.OWNER_USERNAME,
                                     ),
                                 ],
@@ -448,7 +459,7 @@ class Call(PyTgCalls):
                         )
                         await app.send_message(
                             chat_id,
-                            "<b>🎵 𝐓ʜ 𝐐ᴇᴜᴇ ᴀs ɪɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓 𝐀ᴅᴅ 𝐌ᴏʀ 𝐒ᴏɴɢs!!</b>",
+                            "<b>🎵 ʜᴇ ᴜᴜᴇ ᴀs ɪɴɪsʜᴇᴅ. sᴇ /play ᴏ 𝐀ᴅᴅ 𝐌ᴏᴇ 𝐒ᴏɴɢs!!</b>",
                             reply_markup=buttons,
                         )
                     except Exception:
@@ -475,14 +486,14 @@ class Call(PyTgCalls):
                                 ),
                             ],
                             [
-                                InlineKeyboardButton(text=_["⌯ ᴅєᴠєʟᴏᴘєꝛ​ ⌯"], user_id=config.OWNER_USERNAME
+                                InlineKeyboardButton(text=_["⌯ єᴠєʟᴏᴘєꝛ ⌯"], user_id=config.OWNER_USERNAME
                                 ),
                             ]
                         ]
                     )
                     await app.send_message(
                         chat_id,
-                        "<b>🎵 𝐓ʜᴇ 𝐐ᴇᴜᴇ 𝐇ᴀs 𝐅ɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓ᴏ 𝐀ᴅ 𝐌ʀᴇ ᴏɴɢs!!</b>",
+                        "<b>🎵 ʜᴇ ᴜᴇᴇ 𝐇s 𝐅ɪɴɪsʜᴇᴅ. sᴇ /play 𝐓 𝐀ᴅᴅ 𝐌ᴏᴇ 𝐒ɴɢs!!</b>",
                         reply_markup=buttons,
                     )
                 except:
