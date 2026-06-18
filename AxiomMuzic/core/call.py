@@ -316,7 +316,6 @@ class Call(PyTgCalls):
         if await is_autoend():
             counter[chat_id] = {}
             users = len(await assistant.get_participants(chat_id))
-            if users == 1:
                 autoend[chat_id] = datetime.now() + timedelta(minutes=1)
 
     async def _queue_autoplay_track(self, chat_id: int, last_track: dict, _):
