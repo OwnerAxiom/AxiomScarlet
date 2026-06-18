@@ -21,6 +21,7 @@ authuserdb = mongodb.authuser
 autoenddb = mongodb.autoend
 assdb = mongodb.assistants
 autoplaydb = mongodb.autoplay
+autoplayhistorydb = mongodb.autoplayhistory
 thumbdb = mongodb.thumbnail
 thumbdb = mongodb.thumbmode
 blacklist_chatdb = mongodb.blacklistChat
