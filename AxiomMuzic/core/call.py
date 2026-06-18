@@ -49,6 +49,15 @@ autoend = {}
 counter = {}
 
 async def _clear_(chat_id: int):
+    # Animation task cancel kar
+    if chat_id in db and len(db[chat_id]) > 0:
+        if "animation_task" in db[chat_id][0]:
+            try:
+                db[chat_id][0]["animation_task"].cancel()
+                print(f"✅ Animation task cancelled for chat {chat_id}")
+            except:
+                pass
+    
     db[chat_id] = []
     await remove_active_video_chat(chat_id)
     await remove_active_chat(chat_id)
@@ -422,7 +431,7 @@ class Call(PyTgCalls):
                             [
                                 [
                                     InlineKeyboardButton(
-                                        "✙ ʌᴅᴅ ϻє вᴧʙʏ ✙",
+                                        "✙ ʌᴅᴅ є вᴧʙʏ ✙",
                                         url=f"https://t.me/{app.username}?startgroup=true",
                                     ),
                                     InlineKeyboardButton(
@@ -439,7 +448,7 @@ class Call(PyTgCalls):
                         )
                         await app.send_message(
                             chat_id,
-                            "<b>🎵 𝐓ʜᴇ 𝐐ᴜᴇᴜᴇ 𝐇ᴀs 𝐅ɪɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓ᴏ 𝐀ᴅᴅ 𝐌ᴏʀᴇ 𝐒ᴏɴɢs!!</b>",
+                            "<b>🎵 𝐓ʜ 𝐐ᴇᴜᴇ ᴀs ɪɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓 𝐀ᴅᴅ 𝐌ᴏʀ 𝐒ᴏɴɢs!!</b>",
                             reply_markup=buttons,
                         )
                     except Exception:
@@ -458,7 +467,7 @@ class Call(PyTgCalls):
                         [
                             [
                                 InlineKeyboardButton(
-                                    "✙ ʌᴅᴅ ϻє вᴧʙʏ ✙",
+                                    "✙ ʌᴅᴅ є вᴧʙʏ ✙",
                                     url=f"https://t.me/{app.username}?startgroup=true",
                                 ),
                                 InlineKeyboardButton(
@@ -473,7 +482,7 @@ class Call(PyTgCalls):
                     )
                     await app.send_message(
                         chat_id,
-                        "<b>🎵 𝐓ʜᴇ 𝐐ᴜᴇᴜᴇ 𝐇ᴀs 𝐅ɪɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓ᴏ 𝐀ᴅᴅ 𝐌ᴏʀᴇ 𝐒ᴏɴɢs!!</b>",
+                        "<b>🎵 𝐓ʜᴇ 𝐐ᴇᴜᴇ 𝐇ᴀs 𝐅ɴɪsʜᴇᴅ. 𝐔sᴇ /play 𝐓ᴏ 𝐀ᴅ 𝐌ʀᴇ ᴏɴɢs!!</b>",
                         reply_markup=buttons,
                     )
                 except:
