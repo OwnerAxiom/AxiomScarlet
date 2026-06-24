@@ -13,10 +13,7 @@
 # -----------------------------------------------
 
 class Helper(object):
-    HELP_M = '''<b>❖ ᴄʜᴏᴏsᴇ ᴛʜᴇ ᴄᴀᴛᴇɢᴏʀʏ ғᴏʀ ᴡʜɪᴄʜ ʏᴏᴜ ᴡᴀɴɴᴀ ɢᴇᴛ ʜᴇʟᴩ.
-ᴀsᴋ ʏᴏᴜʀ ᴅᴏᴜʙᴛs ᴀᴛ sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ
-
-❖ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs ᴄᴀɴ ʙᴇ ᴜsᴇᴅ ᴡɪᴛʜ : /</b>'''
+    HELP_M = '''"<blockquote expandable><b>📗 ᴅɪᴠє ɪηᴛσ ᴧʟʟ ᴄσϻϻᴧηᴅ ᴄᴧᴛєɢσꝛɪєs ʙєʟσᴡ </blockquote>\n\n<blockquote expandable>✧ ɢєᴛ ɢυɪᴅᴧηᴄє - ᴧssɪsᴛᴧηᴄє ɪη συꝛ <a href={0}>sυᴘᴘσꝛᴛ ᴄʜᴧᴛ</a> — ɪ'ϻ ʜєꝛє ғσꝛ ʏσυ!</blockquote>\n<blockquote expandable>✧ υsє ᴧʟʟ ᴄσϻϻᴧηᴅs ᴡɪᴛʜ ᴛʜɪs sʏηᴛᴧx ➜ <code>/</code> </b></blockquote>"'''
     HELP_ChatGPT = '''<u><b>ᴄʜᴀᴛɢᴘᴛ ᴄᴏᴍᴍᴀɴᴅꜱ :</u></b>
 
 • /ask : ǫᴜᴇʀɪᴇs ᴛʜᴇ ᴀɪ ᴍᴏᴅᴇʟ ᴛᴏ ɢᴇᴛ ᴀ ʀᴇsᴘᴏɴsᴇ ᴛᴏ ʏᴏᴜʀ ǫᴜᴇsᴛɪᴏɴ.
