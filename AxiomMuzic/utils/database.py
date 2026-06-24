@@ -38,6 +38,8 @@ skipdb = mongodb.skipmode
 sudoersdb = mongodb.sudoers
 usersdb = mongodb.tgusersdb
 cardsdb = mongodb.cards
+autoplaylangdb = mongodb.autoplaylang
+autoplaymooddb = mongodb.autoplaymood
 
 # Shifting to memory [mongo sucks often]
 active = []
@@ -57,6 +59,8 @@ skipmode = {}
 autoplay = {}
 autoplay_history = {}
 thumbmode = {}
+autoplay_lang = {}
+autoplay_mood = {}
 
 
 async def get_assistant_number(chat_id: int) -> str:
@@ -827,3 +831,37 @@ async def get_thumb_mode(chat_id: int):
         return True  # default ON
 
     return data.get("thumb", True)
+
+async def get_autoplay_lang(chat_id: int) -> str:
+    mode = autoplay_lang.get(chat_id)
+    if mode:
+        return mode
+    user = await autoplaylangdb.find_one({"chat_id": chat_id})
+    lang = user.get("lang") if user else "auto"
+    autoplay_lang[chat_id] = lang
+    return lang
+
+async def set_autoplay_lang(chat_id: int, lang: str):
+    autoplay_lang[chat_id] = lang
+    await autoplaylangdb.update_one(
+        {"chat_id": chat_id},
+        {"$set": {"lang": lang}},
+        upsert=True,
+    )
+
+async def get_autoplay_mood(chat_id: int) -> str:
+    mode = autoplay_mood.get(chat_id)
+    if mode:
+        return mode
+    user = await autoplaymooddb.find_one({"chat_id": chat_id})
+    mood = user.get("mood") if user else "any"
+    autoplay_mood[chat_id] = mood
+    return mood
+
+async def set_autoplay_mood(chat_id: int, mood: str):
+    autoplay_mood[chat_id] = mood
+    await autoplaymooddb.update_one(
+        {"chat_id": chat_id},
+        {"$set": {"mood": mood}},
+        upsert=True,
+    )
