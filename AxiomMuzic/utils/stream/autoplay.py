@@ -19,21 +19,93 @@ PLAYED_HISTORY = {}
 CHANNEL_INDEX = {}
 
 # ==========================================
-# TELEGRAM LOG HELPER (SPECIAL FONT)
+# GLOBAL AUTOPLAY LOG MESSAGE TRACKER
 # ==========================================
-async def send_log(message: str):
-    """Send log message to LOGGER_ID group with special font"""
+AUTOPLAY_LOG_MESSAGE = {}  # Store message_id per chat
+
+# ==========================================
+# TELEGRAM LOG HELPER (SPECIAL FONT + EDIT MODE)
+# ==========================================
+async def send_log(chat_id: int, stage: str, details: dict = None):
+    """Send or edit a single log message for autoplay with special font"""
     try:
         if LOGGER_ID:
-            # Convert message to special font
-            formatted_message = convert_to_special_font(message)
-            await app.send_message(
-                LOGGER_ID,
-                f"<b>[AutoPlay]</b>\n{formatted_message}",
-                disable_web_page_preview=True
-            )
+            # Build the log text with special font
+            if stage == "start":
+                text = (
+                    f"<b>{convert_to_special_font('🎵 AUTOPLAY STARTED')}</b>\n\n"
+                    f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {convert_to_special_font(details.get('requester_name', 'Unknown'))}\n"
+                    f"<b>{convert_to_special_font('🌐 Language:')}</b> {convert_to_special_font(details.get('lang', 'Auto'))}\n"
+                    f"<b>{convert_to_special_font('🎭 Mood:')}</b> {convert_to_special_font(details.get('mood', 'Any'))}\n"
+                    f"<b>{convert_to_special_font('🎶 Seed:')}</b> {convert_to_special_font(details.get('seed', 'N/A')[:50])}"
+                )
+            elif stage == "fetching":
+                text = (
+                    f"<b>{convert_to_special_font('🔍 AUTOPLAY FETCHING')}</b>\n\n"
+                    f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('🔄 Strategy:')}</b> {convert_to_special_font(details.get('strategy', 'N/A'))}\n"
+                    f"<b>{convert_to_special_font('📊 Channels:')}</b> {convert_to_special_font(str(details.get('channels', 0)))}\n"
+                    f"<b>{convert_to_special_font('🎵 Candidates:')}</b> {convert_to_special_font(str(details.get('candidates', 0)))}"
+                )
+            elif stage == "success":
+                songs_list = "\n".join([f"• {convert_to_special_font(s[:50])}" for s in details.get('songs', [])[:10]])
+                text = (
+                    f"<b>{convert_to_special_font('✅ AUTOPLAY SUCCESS')}</b>\n\n"
+                    f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {convert_to_special_font(details.get('requester_name', 'Unknown'))}\n"
+                    f"<b>{convert_to_special_font('➕ Added:')}</b> {convert_to_special_font(str(details.get('count', 0)))} {convert_to_special_font('songs')}\n\n"
+                    f"<b>{convert_to_special_font('🎶 Queue:')}</b>\n{songs_list}"
+                )
+            elif stage == "error":
+                text = (
+                    f"<b>{convert_to_special_font('❌ AUTOPLAY ERROR')}</b>\n\n"
+                    f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('⚠️ Error:')}</b> {convert_to_special_font(details.get('error', 'Unknown'))}"
+                )
+            else:
+                return
+            
+            # Check if we already have a message for this chat
+            if chat_id in AUTOPLAY_LOG_MESSAGE:
+                try:
+                    # Edit existing message
+                    await app.edit_message_text(
+                        LOGGER_ID,
+                        AUTOPLAY_LOG_MESSAGE[chat_id],
+                        text,
+                        disable_web_page_preview=True
+                    )
+                except:
+                    # If edit fails, delete old and send new
+                    try:
+                        await app.delete_messages(
+                            LOGGER_ID,
+                            AUTOPLAY_LOG_MESSAGE[chat_id]
+                        )
+                    except:
+                        pass
+                    msg = await app.send_message(
+                        LOGGER_ID,
+                        text,
+                        disable_web_page_preview=True
+                    )
+                    AUTOPLAY_LOG_MESSAGE[chat_id] = msg.id
+            else:
+                # Send new message
+                msg = await app.send_message(
+                    LOGGER_ID,
+                    text,
+                    disable_web_page_preview=True
+                )
+                AUTOPLAY_LOG_MESSAGE[chat_id] = msg.id
+                
     except Exception as e:
-        LOGGER(__name__).error(f"[AutoPlay] Failed to send log to LOGGER_ID: {e}")
+        LOGGER(__name__).error(f"[AutoPlay Log Error] {e}")
 
 # ==========================================
 # SPECIAL UNICODE FONT CONVERTER (FIXED)
@@ -1626,8 +1698,31 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
     lang = await get_autoplay_lang(chat_id)
     mood = await get_autoplay_mood(chat_id)
     
-    # SEND LOG TO TELEGRAM (SPECIAL FONT)
-    await send_log(f"🎵 Starting AutoPlay\n📍 Chat: {chat_id}\n🌐 Language: {lang}\n🎭 Mood: {mood}\n🎶 Seed: {seed_title[:50]}")
+    # Get requester info
+    try:
+        requester = await app.get_users(requester_id)
+        requester_name = requester.first_name
+        requester_username = f"@{requester.username}" if requester.username else "N/A"
+    except:
+        requester_name = "Unknown"
+        requester_username = "N/A"
+    
+    # Get chat info
+    try:
+        chat_info = await app.get_chat(original_chat_id)
+        chat_name = chat_info.title if chat_info.title else "Private Chat"
+    except:
+        chat_name = "Private Chat"
+    
+    # SEND START LOG
+    await send_log(chat_id, "start", {
+        "chat_id": original_chat_id,
+        "chat_name": chat_name,
+        "requester_name": requester_name,
+        "lang": lang,
+        "mood": mood,
+        "seed": seed_title
+    })
     
     if chat_id not in PLAYED_HISTORY: PLAYED_HISTORY[chat_id] = []
     history = PLAYED_HISTORY[chat_id]
@@ -1640,7 +1735,6 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
     try:
         candidates = []
         
-        # Try multiple fallback strategies
         strategies = [
             (lang, mood),
             (lang, "any"),
@@ -1658,7 +1752,14 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
             if not channels:
                 continue
             
-            await send_log(f"🔍 Trying strategy: {try_lang}/{try_mood} - {len(channels)} channels")
+            # UPDATE LOG - FETCHING
+            await send_log(chat_id, "fetching", {
+                "chat_id": original_chat_id,
+                "chat_name": chat_name,
+                "strategy": f"{try_lang}/{try_mood}",
+                "channels": len(channels),
+                "candidates": len(candidates)
+            })
             
             for channel_name in channels:
                 if len(candidates) >= limit * 2: break
@@ -1694,16 +1795,12 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                             "duration": 180
                         })
         
-        await send_log(f"📊 Total candidates from channels: {len(candidates)}")
-        
         # Fallback: Direct YouTube search
         if len(candidates) < 3:
-            await send_log(f"⚠️ Low candidates, using YouTube search fallback")
             search_queries = [
                 f"{lang} {mood} songs 2024",
                 f"{lang} {mood} hits",
                 f"latest {lang} songs",
-                f"{mood} songs {lang}",
             ]
             
             for query in search_queries:
@@ -1711,25 +1808,28 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                     break
                 try:
                     result, vidid = await YouTube.track(query)
-                    if result and vidid:
-                        if vidid not in queued_vids:
-                            is_dup = False
-                            for played in history:
-                                if played.get("vidid") == vidid or is_same_song(played.get("title", ""), result.get("title", "")):
-                                    is_dup = True
-                                    break
-                            
-                            if not is_dup:
-                                candidates.append({
-                                    "id": vidid,
-                                    "title": result.get("title"),
-                                    "duration": 180
-                                })
-                except Exception as e:
+                    if result and vidid and vidid not in queued_vids:
+                        is_dup = False
+                        for played in history:
+                            if played.get("vidid") == vidid or is_same_song(played.get("title", ""), result.get("title", "")):
+                                is_dup = True
+                                break
+                        
+                        if not is_dup:
+                            candidates.append({
+                                "id": vidid,
+                                "title": result.get("title"),
+                                "duration": 180
+                            })
+                except:
                     continue
         
         if not candidates:
-            await send_log(f"❌ CRITICAL: No candidates found at all!")
+            await send_log(chat_id, "error", {
+                "chat_id": original_chat_id,
+                "chat_name": chat_name,
+                "error": "No candidates found"
+            })
             return 0
         
         random.shuffle(candidates)
@@ -1746,7 +1846,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                 title, duration_min, duration_sec, _, next_vidid = await YouTube.details(next_id, videoid=True)
                 if not title: title = candidate.get("title", "Unknown")
                 if not duration_min or duration_min == "0:00": duration_min = "3:00"
-            except Exception as e:
+            except:
                 title = candidate.get("title", "Unknown")
                 duration_min = "3:00"
                 duration_sec = 180
@@ -1761,21 +1861,28 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                 history.append({"vidid": next_vidid, "title": title})
                 queued_vids.add(next_vidid)
                 added += 1
-                added_titles.append(f"• {title[:40]}")
-            except Exception as e:
+                added_titles.append(title)
+            except:
                 continue
 
-        # SEND SUCCESS LOG TO TELEGRAM (SPECIAL FONT)
+        # SEND SUCCESS LOG
         if added > 0:
-            titles_list = "\n".join(added_titles[:10])
-            await send_log(f"✅ SUCCESS: Added {added} songs to queue\n\n{titles_list}")
-        else:
-            await send_log(f"⚠️ No songs could be added to queue")
+            await send_log(chat_id, "success", {
+                "chat_id": original_chat_id,
+                "chat_name": chat_name,
+                "requester_name": requester_name,
+                "count": added,
+                "songs": added_titles
+            })
         
         return added
         
     except Exception as e:
-        await send_log(f"🔥 CRITICAL ERROR: {str(e)}")
+        await send_log(chat_id, "error", {
+            "chat_id": original_chat_id,
+            "chat_name": chat_name,
+            "error": str(e)
+        })
         return 0
     finally:
         _autoplay_fetching[chat_id] = False
