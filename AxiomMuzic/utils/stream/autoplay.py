@@ -19,15 +19,17 @@ PLAYED_HISTORY = {}
 CHANNEL_INDEX = {}
 
 # ==========================================
-# TELEGRAM LOG HELPER
+# TELEGRAM LOG HELPER (SPECIAL FONT)
 # ==========================================
 async def send_log(message: str):
-    """Send log message to LOGGER_ID group"""
+    """Send log message to LOGGER_ID group with special font"""
     try:
         if LOGGER_ID:
+            # Convert message to special font
+            formatted_message = convert_to_special_font(message)
             await app.send_message(
                 LOGGER_ID,
-                f"<b>[AutoPlay]</b>\n{message}",
+                f"<b>[AutoPlay]</b>\n{formatted_message}",
                 disable_web_page_preview=True
             )
     except Exception as e:
@@ -1607,7 +1609,7 @@ def is_bad_song(title: str, duration_sec: int) -> bool:
 
 
 # ==========================================
-# MAIN AUTOPLAY FUNCTION (WITH TELEGRAM LOGS)
+# MAIN AUTOPLAY FUNCTION (WITH SPECIAL FONT LOGS)
 # ==========================================
 async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUTOPLAY_BATCH_SIZE) -> int:
     if not seed_track or not await is_autoplay(chat_id): return 0
@@ -1624,8 +1626,8 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
     lang = await get_autoplay_lang(chat_id)
     mood = await get_autoplay_mood(chat_id)
     
-    # SEND LOG TO TELEGRAM
-    await send_log(f"🎵 <b>Starting AutoPlay</b>\n📍 Chat: <code>{chat_id}</code>\n🌐 Language: <b>{lang}</b>\n🎭 Mood: <b>{mood}</b>\n🎶 Seed: <code>{seed_title[:50]}</code>")
+    # SEND LOG TO TELEGRAM (SPECIAL FONT)
+    await send_log(f"🎵 Starting AutoPlay\n📍 Chat: {chat_id}\n🌐 Language: {lang}\n🎭 Mood: {mood}\n🎶 Seed: {seed_title[:50]}")
     
     if chat_id not in PLAYED_HISTORY: PLAYED_HISTORY[chat_id] = []
     history = PLAYED_HISTORY[chat_id]
@@ -1656,7 +1658,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
             if not channels:
                 continue
             
-            await send_log(f"🔍 Trying strategy: <b>{try_lang}/{try_mood}</b> - {len(channels)} channels")
+            await send_log(f"🔍 Trying strategy: {try_lang}/{try_mood} - {len(channels)} channels")
             
             for channel_name in channels:
                 if len(candidates) >= limit * 2: break
@@ -1692,7 +1694,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                             "duration": 180
                         })
         
-        await send_log(f"📊 Total candidates from channels: <b>{len(candidates)}</b>")
+        await send_log(f"📊 Total candidates from channels: {len(candidates)}")
         
         # Fallback: Direct YouTube search
         if len(candidates) < 3:
@@ -1727,7 +1729,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                     continue
         
         if not candidates:
-            await send_log(f"❌ <b>CRITICAL:</b> No candidates found at all!")
+            await send_log(f"❌ CRITICAL: No candidates found at all!")
             return 0
         
         random.shuffle(candidates)
@@ -1763,20 +1765,27 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
             except Exception as e:
                 continue
 
-        # SEND SUCCESS LOG TO TELEGRAM
+        # SEND SUCCESS LOG TO TELEGRAM (SPECIAL FONT)
         if added > 0:
             titles_list = "\n".join(added_titles[:10])
-            await send_log(f"✅ <b>SUCCESS:</b> Added <b>{added}</b> songs to queue\n\n{titles_list}")
+            await send_log(f"✅ SUCCESS: Added {added} songs to queue\n\n{titles_list}")
         else:
             await send_log(f"⚠️ No songs could be added to queue")
         
         return added
         
     except Exception as e:
-        await send_log(f"🔥 <b>CRITICAL ERROR:</b> {str(e)}")
+        await send_log(f"🔥 CRITICAL ERROR: {str(e)}")
         return 0
     finally:
         _autoplay_fetching[chat_id] = False
+
+async def maybe_refetch_autoplay(chat_id: int, seed_track: dict):
+    if not seed_track: return
+    current_queue = len(db.get(chat_id, []))
+    if current_queue <= AUTOPLAY_REFETCH_THRESHOLD:
+        await send_log(f"🔄 Trigger AutoPlay - Queue: {current_queue}")
+        asyncio.create_task(queue_autoplay_tracks(chat_id, seed_track))
 
 async def maybe_refetch_autoplay(chat_id: int, seed_track: dict):
     if not seed_track: return
