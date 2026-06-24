@@ -56,7 +56,6 @@ pyyaml
 py-yt-search
 qrcode
 requests
-py-yt
 SafoneAPI
 speedtest-cli
 SpeechRecognition
