@@ -10,7 +10,7 @@ from py_yt import VideosSearch, Playlist
 import aiohttp
 
 API_URL = os.environ.get("SHRUTI_API_URL", "https://api.shrutibots.site")
-API_KEY = os.environ.get("SHRUTI_API_KEY", "ShrutiBotsx7llDDmWnF986ygx9seT")
+API_KEY = os.environ.get("SHRUTI_API_KEY", "ShrutiBotsMVt5e8TWmSe6KMwS82xJ")
 DOWNLOAD_DIR = "downloads"
 
 def time_to_seconds(time):
