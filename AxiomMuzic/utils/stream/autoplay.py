@@ -1974,8 +1974,21 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                 "requester_username": requester_username,
                 "user_id": requester_id,
                 "count": added,
-                "songs": added_titles  # ALL songs, not limited
+                "songs": added_titles
             })
+        
+        return added
+        
+    except Exception as e:
+        await send_log(chat_id, "error", {
+            "chat_id": original_chat_id,
+            "chat_name": chat_name,
+            "error": str(e)
+        })
+        return 0
+    finally:
+        _autoplay_fetching[chat_id] = False
+
 
 async def maybe_refetch_autoplay(chat_id: int, seed_track: dict):
     if not seed_track: return
