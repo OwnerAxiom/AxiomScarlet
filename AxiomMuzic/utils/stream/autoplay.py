@@ -1,6 +1,6 @@
+import re
 import asyncio
 import random
-import re
 import config
 from AxiomMuzic import LOGGER, YouTube, app
 from AxiomMuzic.misc import db
@@ -1599,38 +1599,30 @@ def is_bad_song(title: str, duration_sec) -> bool:
     if not title:
         return True
     
-    # ==========================================
-    # CONVERT DURATION TO INTEGER
-    # ==========================================
+    # Convert duration to integer
     try:
-        # If already int, use it
         if isinstance(duration_sec, int):
             duration_int = duration_sec
-        # If string like "3:45" or "1:23:45"
         elif isinstance(duration_sec, str):
             if ":" in duration_sec:
                 parts = duration_sec.split(":")
-                if len(parts) == 2:  # MM:SS
+                if len(parts) == 2:
                     duration_int = int(parts[0]) * 60 + int(parts[1])
-                elif len(parts) == 3:  # HH:MM:SS
+                elif len(parts) == 3:
                     duration_int = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
                 else:
                     duration_int = 180
-            # If ISO format like "PT3M45S"
             elif duration_sec.startswith("PT"):
-                import re
                 minutes = re.search(r'(\d+)M', duration_sec)
                 seconds = re.search(r'(\d+)S', duration_sec)
                 duration_int = (int(minutes.group(1)) * 60 if minutes else 0) + (int(seconds.group(1)) if seconds else 0)
             else:
-                # Try to parse as plain integer string
                 duration_int = int(duration_sec)
         else:
             duration_int = 180
     except:
-        duration_int = 180  # Default to 3 minutes if parsing fails
+        duration_int = 180
     
-    # Now use duration_int for all comparisons
     title_lower = title.lower().strip()
     
     # ==========================================
@@ -2080,8 +2072,14 @@ async def maybe_refetch_autoplay(chat_id: int, seed_track: dict):
         try:
             chat_info = await app.get_chat(original_chat_id)
             chat_name = chat_info.title if chat_info.title else "Private Chat"
+            
+            if chat_info.username:
+                chat_link = f"<a href='https://t.me/{chat_info.username}'>{convert_to_special_font(chat_name)}</a>"
+            else:
+                chat_link = convert_to_special_font(chat_name)
         except:
             chat_name = "Private Chat"
+            chat_link = convert_to_special_font("Private Chat")
         
         await send_log(chat_id, "fetching", {
             "chat_id": original_chat_id,
