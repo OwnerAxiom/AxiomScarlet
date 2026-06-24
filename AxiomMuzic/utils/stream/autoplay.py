@@ -36,7 +36,7 @@ async def send_log(chat_id: int, stage: str, details: dict = None):
                     f"<b>{convert_to_special_font('🎵 AUTOPLAY STARTED')}</b>\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
                     f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_name', 'Private')}\n"
-                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_name', 'Unknown')}\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_name', 'AxiomUser')}\n"
                     f"<b>{convert_to_special_font('🌐 Language:')}</b> {str(details.get('lang', 'Auto'))}\n"
                     f"<b>{convert_to_special_font('🎭 Mood:')}</b> {str(details.get('mood', 'Any'))}\n"
                     f"<b>{convert_to_special_font('🎶 Seed:')}</b> {str(details.get('seed', 'N/A')[:50])}"
@@ -61,7 +61,7 @@ async def send_log(chat_id: int, stage: str, details: dict = None):
                     f"<b>{convert_to_special_font('🎶 Seed:')}</b> {str(details.get('seed', 'N/A')[:50])}\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
                     f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_link', str(details.get('chat_name', 'Private')))}\n\n"
-                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_link', str(details.get('requester_name', 'Unknown')))}\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_link', str(details.get('requester_name', 'AxiomUser')))}\n"
                     f"<b>{convert_to_special_font('🆔 User ID:')}</b> <code>{details.get('user_id', 'N/A')}</code>\n"
                     f"<b>{convert_to_special_font('📱 Username:')}</b> {str(details.get('requester_username', 'N/A'))}\n"
                     f"<b>{convert_to_special_font('➕ Added:')}</b> {str(details.get('count', 0))} {'songs'}\n\n"
@@ -1835,7 +1835,7 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
         requester_name = requester.first_name
         requester_username = f"@{requester.username}" if requester.username else "N/A"
     except:
-        requester_name = "Unknown"
+        requester_name = "AxiomUser"
         requester_username = "N/A"
     
     # Get chat info
@@ -1991,10 +1991,10 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
             
             try:
                 title, duration_min, duration_sec, _, next_vidid = await YouTube.details(next_id, videoid=True)
-                if not title: title = candidate.get("title", "Unknown")
+                if not title: title = candidate.get("title", "AxiomTitle")
                 if not duration_min or duration_min == "0:00": duration_min = "3:00"
             except:
-                title = candidate.get("title", "Unknown")
+                title = candidate.get("title", "AxiomTitle")
                 duration_min = "3:00"
                 duration_sec = candidate.get("duration", 180)
                 next_vidid = next_id
@@ -2030,9 +2030,9 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
                 else:
                     requester_link = f"<a href='tg://user?id={requester_id}'>{convert_to_special_font(requester_name)}</a>"
             except:
-                requester_name = "Unknown"
+                requester_name = "AxiomUser"
                 requester_username = "N/A"
-                requester_link = convert_to_special_font("Unknown")
+                requester_link = "AxiomUser"
             
             await send_log(chat_id, "success", {
                 "chat_id": original_chat_id,
