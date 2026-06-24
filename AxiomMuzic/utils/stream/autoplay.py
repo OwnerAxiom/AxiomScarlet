@@ -37,42 +37,42 @@ async def send_log(chat_id: int, stage: str, details: dict = None):
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
                     f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_name', 'Private')}\n"
                     f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_name', 'Unknown')}\n"
-                    f"<b>{convert_to_special_font('🌐 Language:')}</b> {convert_to_special_font(str(details.get('lang', 'Auto')))}\n"
-                    f"<b>{convert_to_special_font('🎭 Mood:')}</b> {convert_to_special_font(str(details.get('mood', 'Any')))}\n"
-                    f"<b>{convert_to_special_font('🎶 Seed:')}</b> {convert_to_special_font(str(details.get('seed', 'N/A')[:50]))}"
+                    f"<b>{convert_to_special_font('🌐 Language:')}</b> {str(details.get('lang', 'Auto'))}\n"
+                    f"<b>{convert_to_special_font('🎭 Mood:')}</b> {str(details.get('mood', 'Any'))}\n"
+                    f"<b>{convert_to_special_font('🎶 Seed:')}</b> {str(details.get('seed', 'N/A')[:50])}"
                 )
             elif stage == "fetching":
                 text = (
                     f"<b>{convert_to_special_font('🔍 AUTOPLAY FETCHING')}</b>\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
-                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(str(details.get('chat_name', 'Private')))}\n"
-                    f"<b>{convert_to_special_font('🔄 Strategy:')}</b> {convert_to_special_font(str(details.get('strategy', 'N/A')))}\n"
-                    f"<b>{convert_to_special_font('📊 Channels:')}</b> {convert_to_special_font(str(details.get('channels', 0)))}\n"
-                    f"<b>{convert_to_special_font('🎵 Candidates:')}</b> {convert_to_special_font(str(details.get('candidates', 0)))}"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {str(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('🔄 Strategy:')}</b> {str(details.get('strategy', 'N/A'))}\n"
+                    f"<b>{convert_to_special_font('📊 Channels:')}</b> {str(details.get('channels', 0))}\n"
+                    f"<b>{convert_to_special_font('🎵 Candidates:')}</b> {str(details.get('candidates', 0))}"
                 )
             elif stage == "success":
                 # Show ALL songs, not just 10
-                songs_list = "\n".join([f"• {convert_to_special_font(s[:60])}" for s in details.get('songs', [])])
+                songs_list = "\n".join([f"• {s[:60]}" for s in details.get('songs', [])])
                 
                 text = (
                     f"<b>{convert_to_special_font('✅ AUTOPLAY SUCCESS')}</b>\n\n"
-                    f"<b>{convert_to_special_font('🌐 Language:')}</b> {convert_to_special_font(str(details.get('lang', 'Auto')))}\n"
-                    f"<b>{convert_to_special_font('🎭 Mood:')}</b> {convert_to_special_font(str(details.get('mood', 'Any')))}\n"
-                    f"<b>{convert_to_special_font('🎶 Seed:')}</b> {convert_to_special_font(str(details.get('seed', 'N/A')[:50]))}\n\n"
+                    f"<b>{convert_to_special_font('🌐 Language:')}</b> {str(details.get('lang', 'Auto'))}\n"
+                    f"<b>{convert_to_special_font('🎭 Mood:')}</b> {str(details.get('mood', 'Any'))}\n"
+                    f"<b>{convert_to_special_font('🎶 Seed:')}</b> {str(details.get('seed', 'N/A')[:50])}\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
-                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_link', convert_to_special_font(str(details.get('chat_name', 'Private'))))}\n\n"
-                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_link', convert_to_special_font(str(details.get('requester_name', 'Unknown'))))}\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_link', str(details.get('chat_name', 'Private')))}\n\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_link', str(details.get('requester_name', 'Unknown')))}\n"
                     f"<b>{convert_to_special_font('🆔 User ID:')}</b> <code>{details.get('user_id', 'N/A')}</code>\n"
-                    f"<b>{convert_to_special_font('📱 Username:')}</b> {convert_to_special_font(str(details.get('requester_username', 'N/A')))}\n"
-                    f"<b>{convert_to_special_font('➕ Added:')}</b> {convert_to_special_font(str(details.get('count', 0)))} {convert_to_special_font('songs')}\n\n"
+                    f"<b>{convert_to_special_font('📱 Username:')}</b> {str(details.get('requester_username', 'N/A'))}\n"
+                    f"<b>{convert_to_special_font('➕ Added:')}</b> {str(details.get('count', 0))} {'songs'}\n\n"
                     f"<b>{convert_to_special_font('🎶 Queue:')}</b>\n{songs_list}"
                 )
             elif stage == "error":
                 text = (
                     f"<b>{convert_to_special_font('❌ AUTOPLAY ERROR')}</b>\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
-                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(str(details.get('chat_name', 'Private')))}\n"
-                    f"<b>{convert_to_special_font('⚠️ Error:')}</b> {convert_to_special_font(str(details.get('error', 'Unknown')))}"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {str(details.get('chat_name', 'Private'))}\n"
+                    f"<b>{convert_to_special_font('⚠️ Error:')}</b> {str(details.get('error', 'Unknown'))}"
                 )
             else:
                 return
