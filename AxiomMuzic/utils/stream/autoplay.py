@@ -1598,87 +1598,152 @@ def is_bad_song(title: str, duration_sec: int) -> bool:
     
     title_lower = title.lower().strip()
     
+    # ==========================================
+    # STRICT REJECT LIST - NON-MUSIC CONTENT
+    # ==========================================
     bad_words = [
-        # playlists / compilations
-        "jukebox",
-        "mashup",
-        "mix",
-        "album",
-        "compilation",
-        "playlist",
-        "medley",
-        "non stop",
-        "non-stop",
-        "megamix",
-    
-        # movies / promos
-        "full movie",
-        "movie clip",
-        "movie scene",
-        "official trailer",
-        "trailer",
-        "teaser",
-        "promo",
-    
-        # livestreams
-        "live stream",
-        "livestream",
-        "watch live",
-        "streaming now",
-        "24/7",
-        "24x7",
-    
-        # podcasts / interviews
-        "podcast",
-        "interview",
-        "press conference",
-        "behind the scenes",
-        "making of",
-        "bts video",
-    
-        # reactions / reviews
-        "reaction",
-        "reacts to",
-        "review",
-        "explained",
-    
-        # shorts
-        "#shorts",
-        "youtube shorts",
-        "short video",
-    
-        # gaming
-        "gameplay",
-        "walkthrough",
-        "gaming",
-    
-        # news
-        "breaking news",
-        "news update",
-    
-        # random non-music
-        "food vlog",
-        "travel vlog",
-        "recipe",
-        "cooking"
+        # ===== PLAYLISTS/COMPILATIONS =====
+        "jukebox", "mashup", "mix", "album", "compilation", "playlist", 
+        "medley", "non stop", "non-stop", "megamix", "best of", "top 10",
+        "top 20", "top 50", "top 100", "greatest hits", "full album",
+        
+        # ===== MOVIES/PROMOS =====
+        "full movie", "movie clip", "movie scene", "official trailer", 
+        "trailer", "teaser", "promo", "behind the scenes", "making of",
+        "bloopers", "outtakes",
+        
+        # ===== LIVESTREAMS =====
+        "live stream", "livestream", "watch live", "streaming now", 
+        "24/7", "24x7", "live radio", "live concert full",
+        
+        # ===== PODCASTS/INTERVIEWS =====
+        "podcast", "interview", "press conference", "talk show", 
+        "discussion", "debate", "q&a", "ama",
+        
+        # ===== REACTIONS/REVIEWS =====
+        "reaction", "reacts to", "review", "explained", "analysis",
+        "breakdown", "commentary", "response", "diss track",
+        
+        # ===== SHORTS =====
+        "#shorts", "youtube shorts", "short video", "shorts",
+        
+        # ===== GAMING =====
+        "gameplay", "walkthrough", "gaming", "lets play", "playthrough",
+        "gaming setup", "pc build",
+        
+        # ===== NEWS =====
+        "breaking news", "news update", "news report", "news channel",
+        
+        # ===== VLOGS/DAILY LIFE =====
+        "vlog", "daily vlog", "my day", "day in my life", "routine",
+        "travel vlog", "morning routine", "night routine",
+        
+        # ===== UNBOXING/TECH =====
+        "unboxing", "tech review", "gadget review", "phone review",
+        "laptop review", "camera review", "tech guide", "how to",
+        "tutorial", "guide", "tips", "tricks", "setup", "installation",
+        "tech news", "product review",
+        
+        # ===== COOKING/RECIPES =====
+        "recipe", "cooking", "kitchen", "food preparation", "how to make",
+        "cooking tutorial", "food review", "restaurant review",
+        "mukbang", "eating show",
+        
+        # ===== EDUCATION/LECTURES =====
+        "lecture", "class", "course", "lesson", "study", "exam",
+        "homework", "assignment", "educational", "documentary",
+        
+        # ===== FITNESS/WORKOUT (non-music) =====
+        "workout routine", "exercise video", "yoga session", "fitness guide",
+        "gym routine", "training video",
+        
+        # ===== COMEDY/ENTERTAINMENT (non-music) =====
+        "comedy sketch", "stand up", "funny video", "prank",
+        "challenge video", "social experiment",
+        
+        # ===== DIY/CRAFTS =====
+        "diy", "craft", "art tutorial", "painting tutorial", "drawing",
+        
+        # ===== ASSEMBLY/REPAIR =====
+        "assembly", "repair", "fix", "maintenance", "how to fix",
+        
+        # ===== RANDOM NON-MUSIC =====
+        "assembly", "repair", "fix", "diy", "craft", "art tutorial",
+        "car review", "bike review", "vehicle review"
     ]
     
-    # Reject URL titles
+    # ==========================================
+    # REJECT URL TITLES
+    # ==========================================
     if title_lower.startswith("http"):
         return True
     
-    if "youtu.be/" in title_lower:
+    if "youtu.be/" in title_lower or "youtube.com/" in title_lower:
         return True
     
-    if "youtube.com/" in title_lower:
-        return True
-    
+    # ==========================================
+    # CHECK FOR BAD WORDS
+    # ==========================================
     for word in bad_words:
         if word in title_lower:
             return True
     
-    # Reject too short or too long videos
+    # ==========================================
+    # POSITIVE CHECK: Must have music indicators
+    # ==========================================
+    music_indicators = [
+        # Official music content
+        "official video", "official audio", "lyric video", "lyrics video",
+        "music video", "video song", "audio song", "full song",
+        
+        # Song types
+        "song", "music", "audio", "track", "single",
+        
+        # Versions (ALLOWED)
+        "slowed", "reverb", "sped up", "nightcore", "lofi", "lo-fi", 
+        "remix", "cover", "live", "acoustic", "unplugged", "instrumental",
+        
+        # Music genres
+        "pop", "rock", "hip hop", "rap", "jazz", "blues", "classical", 
+        "edm", "electronic", "r&b", "soul", "funk", "disco",
+        "country", "folk", "metal", "punk", "reggae",
+        
+        # Artist indicators
+        " - ", " | ", " by ", " feat ", " ft ", "feat.", "ft.",
+        
+        # Common patterns
+        "official music video", "official lyric video",
+        "lyrical video", "with lyrics", "subtitles",
+    ]
+    
+    # Check if title has at least one music indicator
+    has_music_indicator = any(indicator in title_lower for indicator in music_indicators)
+    
+    # If no music indicator found, it's likely not a song
+    if not has_music_indicator:
+        return True
+    
+    # ==========================================
+    # DURATION CHECK (Songs: 1.5 min to 15 min)
+    # ==========================================
     if duration_sec < 90 or duration_sec > 900:
+        return True
+    
+    # ==========================================
+    # ADDITIONAL CHECKS FOR QUALITY
+    # ==========================================
+    
+    # Reject if title has too many special characters (likely spam)
+    special_chars = re.findall(r'[^\w\s]', title_lower)
+    if len(special_chars) > 10:
+        return True
+    
+    # Reject if title is too short (likely not a real song)
+    if len(title_lower) < 10:
+        return True
+    
+    # Reject if title is too long (likely playlist or description)
+    if len(title_lower) > 150:
         return True
     
     return False
