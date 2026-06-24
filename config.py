@@ -45,7 +45,7 @@ HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 DEEP_API = getenv("DEEP_API")
 
 # Git
-UPSTREAM_REPO = getenv("UPSTREAM_REPO", "https://github.com/maanavbaby/AxiomScarlet")
+UPSTREAM_REPO = getenv("UPSTREAM_REPO", "https://github.com/OwnerAxiom/AxiomScarlet")
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = getenv("GIT_TOKEN", None)
 
@@ -93,24 +93,24 @@ DEBUG_IGNORE_LOG = True
 
 ###### IMAGE URLS ######
 
-START_IMG_URL = getenv("START_IMG_URL", "https://litter.catbox.moe/6c3qbo.jpg")
-PING_IMG_URL = getenv("PING_IMG_URL", "https://litter.catbox.moe/6c3qbo.jpg")
-PLAYLIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-STATS_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-TELEGRAM_AUDIO_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-TELEGRAM_VIDEO_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-STREAM_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-SOUNCLOUD_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-YOUTUBE_IMG_URL = "https://files.catbox.moe/msqbdr.jpg"
-SPOTIFY_ARTIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-SPOTIFY_ALBUM_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
-SPOTIFY_PLAYLIST_IMG_URL = "https://litter.catbox.moe/6c3qbo.jpg"
+START_IMG_URL = getenv("START_IMG_URL", "https://files.catbox.moe/7apvx6.png")
+PING_IMG_URL = getenv("PING_IMG_URL", "https://files.catbox.moe/7apvx6.png")
+PLAYLIST_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+STATS_IMG_URL = "https://files.catbox.moe/7apvx6.png"
+TELEGRAM_AUDIO_URL = "https://files.catbox.moe/v14dqe.png"
+TELEGRAM_VIDEO_URL = "https://files.catbox.moe/v14dqe.png"
+STREAM_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+SOUNCLOUD_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+YOUTUBE_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/v14dqe.png"
+SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/v14dqe.png"
 
 
 MAANAV_IMG = [
-    "https://litter.catbox.moe/6c3qbo.jpg",
-    "https://litter.catbox.moe/6c3qbo.jpg",
-    "https://litter.catbox.moe/6c3qbo.jpg"
+    "https://files.catbox.moe/7apvx6.png",
+    "https://files.catbox.moe/7apvx6.png",
+    "https://files.catbox.moe/7apvx6.png"
 ]
 
 
