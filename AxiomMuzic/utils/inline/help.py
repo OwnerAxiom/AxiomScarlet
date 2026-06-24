@@ -18,7 +18,23 @@ from pyrogram.enums import ButtonStyle
 
 
 def help_pannel(_, START: Union[bool, int] = None):
-    first = [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"close")]
+    first = [
+        InlineKeyboardButton(
+            text=_["BACK_PAGE"],
+            callback_data=f"mbot_cb",
+            style=ButtonStyle.DANGER,
+        ),
+        InlineKeyboardButton(
+            text=_["BACK_BUTTON"],
+            callback_data=f"settingsback_helper",
+            style=ButtonStyle.PRIMARY,
+        ),
+        InlineKeyboardButton(
+            text=_["NEXT_PAGE"],
+            callback_data=f"mbot_cb",
+            style=ButtonStyle.DANGER,
+        ),
+    ]
     second = [
         InlineKeyboardButton(
             text=_["BACK_PAGE"],
