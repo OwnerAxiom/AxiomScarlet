@@ -87,6 +87,7 @@ def PlayWrapper(command):
                 return await message.reply_photo(
                     photo=PLAYLIST_IMG_URL,
                     caption=_["play_18"],
+                    has_spoiler=True,
                     reply_markup=InlineKeyboardMarkup(buttons),
                 )
         if message.command[0][0] == "c":
