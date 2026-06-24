@@ -51,12 +51,16 @@ async def send_log(chat_id: int, stage: str, details: dict = None):
                     f"<b>{convert_to_special_font('🎵 Candidates:')}</b> {convert_to_special_font(str(details.get('candidates', 0)))}"
                 )
             elif stage == "success":
-                songs_list = "\n".join([f"• {convert_to_special_font(s[:50])}" for s in details.get('songs', [])[:10]])
+                # Show ALL songs, not just 10
+                songs_list = "\n".join([f"• {convert_to_special_font(s[:60])}" for s in details.get('songs', [])])
+                
                 text = (
                     f"<b>{convert_to_special_font('✅ AUTOPLAY SUCCESS')}</b>\n\n"
                     f"<b>{convert_to_special_font('📍 Chat ID:')}</b> <code>{details.get('chat_id')}</code>\n"
-                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {convert_to_special_font(details.get('chat_name', 'Private'))}\n"
-                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {convert_to_special_font(details.get('requester_name', 'Unknown'))}\n"
+                    f"<b>{convert_to_special_font('💬 Chat:')}</b> {details.get('chat_link', convert_to_special_font(details.get('chat_name', 'Private')))}\n"
+                    f"<b>{convert_to_special_font('👤 Requester:')}</b> {details.get('requester_link', convert_to_special_font(details.get('requester_name', 'Unknown')))}\n"
+                    f"<b>{convert_to_special_font('🆔 User ID:')}</b> <code>{details.get('user_id', 'N/A')}</code>\n"
+                    f"<b>{convert_to_special_font('📱 Username:')}</b> {details.get('requester_username', 'N/A')}\n"
                     f"<b>{convert_to_special_font('➕ Added:')}</b> {convert_to_special_font(str(details.get('count', 0)))} {convert_to_special_font('songs')}\n\n"
                     f"<b>{convert_to_special_font('🎶 Queue:')}</b>\n{songs_list}"
                 )
@@ -1867,25 +1871,46 @@ async def queue_autoplay_tracks(chat_id: int, seed_track: dict, limit: int = AUT
 
         # SEND SUCCESS LOG
         if added > 0:
+            # Get requester details with links
+            try:
+                requester = await app.get_users(requester_id)
+                requester_name = requester.first_name
+                requester_username = f"@{requester.username}" if requester.username else "N/A"
+                
+                # Create links if possible
+                if requester.username:
+                    requester_link = f"<a href='https://t.me/{requester.username}'>{convert_to_special_font(requester_name)}</a>"
+                else:
+                    requester_link = f"<a href='tg://user?id={requester_id}'>{convert_to_special_font(requester_name)}</a>"
+            except:
+                requester_name = "Unknown"
+                requester_username = "N/A"
+                requester_link = convert_to_special_font("Unknown")
+            
+            # Get chat details with link
+            try:
+                chat_info = await app.get_chat(original_chat_id)
+                chat_name = chat_info.title if chat_info.title else "Private Chat"
+                
+                if chat_info.username:
+                    chat_link = f"<a href='https://t.me/{chat_info.username}'>{convert_to_special_font(chat_name)}</a>"
+                else:
+                    chat_link = convert_to_special_font(chat_name)
+            except:
+                chat_name = "Private Chat"
+                chat_link = convert_to_special_font("Private Chat")
+            
             await send_log(chat_id, "success", {
                 "chat_id": original_chat_id,
                 "chat_name": chat_name,
+                "chat_link": chat_link,
                 "requester_name": requester_name,
+                "requester_link": requester_link,
+                "requester_username": requester_username,
+                "user_id": requester_id,
                 "count": added,
-                "songs": added_titles
+                "songs": added_titles  # ALL songs, not limited
             })
-        
-        return added
-        
-    except Exception as e:
-        await send_log(chat_id, "error", {
-            "chat_id": original_chat_id,
-            "chat_name": chat_name,
-            "error": str(e)
-        })
-        return 0
-    finally:
-        _autoplay_fetching[chat_id] = False
 
 async def maybe_refetch_autoplay(chat_id: int, seed_track: dict):
     if not seed_track: return
