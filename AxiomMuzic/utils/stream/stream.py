@@ -27,14 +27,14 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
     Real-time sync - Actual playback time ke according thumbnail update
     """
     print(f"🎬 Animation started for: {videoid}")
-    
+
     try:
         from AxiomMuzic.utils.thumbnails import get_thumb
         from pytgcalls import PyTgCalls
-        
+
         start_time = time.time()
         last_update = 0
-        
+
         while True:
             # Cancellation check
             try:
@@ -47,16 +47,16 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
                     return
             except:
                 pass
-            
+
             # Actual elapsed time calculate kar
             elapsed = time.time() - start_time
             progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
-            
+
             # Har 5 second mein update (agar 5% change hua ho)
             if progress_percent >= last_update + 5 or progress_percent == 100:
                 try:
                     thumb_path = await get_thumb(videoid, progress_percent=progress_percent, use_cache=False, user_name=user_name)
-                    
+
                     if thumb_path and not thumb_path.endswith("logo.jpg"):
                         try:
                             await message.edit_media(
@@ -78,17 +78,17 @@ async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat
                                 print(f"🛑 Message deleted, stopping")
                                 return
                             continue
-                
+
                 except Exception as e:
                     print(f"Error generating thumbnail: {e}")
-            
+
             # Agar 100% ho gaya toh stop
             if progress_percent >= 100:
                 print(f"✅ Animation completed (100%)")
                 break
-            
+
             await asyncio.sleep(1)  # Har second check kar
-            
+
     except asyncio.CancelledError:
         print(f"✅ Animation task cancelled for {videoid}")
         try:
@@ -184,7 +184,7 @@ async def stream(
                     forceplay=forceplay,
                 )
                 print(f"🎨 Generating thumbnail for: {vidid}")
-                
+
                 img = await get_thumb(vidid, user_name=user_name if user_name else "AxiomUser")
                 button = stream_markup(_, chat_id)
                 run = await app.send_photo(
@@ -200,7 +200,7 @@ async def stream(
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
-                
+
                 try:
                     parts = duration_min.split(":")
                     if len(parts) == 2:
@@ -209,13 +209,13 @@ async def stream(
                         duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
                     else:
                         duration_sec = 180
-                    
-                    Animation task ko store kar
+
+                    # Animation task ko store kar
                     animation_task = asyncio.create_task(
                         animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
                     )
                     db[chat_id][0]["animation_task"] = animation_task
-                    
+
                 except Exception as e:
                     print(f"Failed to start animation: {e}")
         if count == 0:
@@ -306,7 +306,7 @@ async def stream(
             )
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "stream"
-            
+
             try:
                 parts = duration_min.split(":")
                 if len(parts) == 2:
@@ -315,13 +315,13 @@ async def stream(
                     duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
                 else:
                     duration_sec = 180
-                
-                Animation task ko store kar
+
+                # Animation task ko store kar
                 animation_task = asyncio.create_task(
                     animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
                 )
                 db[chat_id][0]["animation_task"] = animation_task
-                
+
             except Exception as e:
                 print(f"Failed to start animation: {e}")
     elif streamtype == "soundcloud":
@@ -478,7 +478,7 @@ async def stream(
                 forceplay=forceplay,
             )
             print(f"🎨 Generating thumbnail for: {vidid}")
-            
+
             img = await get_thumb(vidid, user_name=user_name if user_name else "AxiomUser")
             button = stream_markup(_, chat_id)
             run = await app.send_photo(
