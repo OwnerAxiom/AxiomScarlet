@@ -57,7 +57,7 @@ async def _clear_(chat_id: int):
                         print(f"⚠️ Task cancellation timeout")
             except Exception as e:
                 print(f"❌ Error cancelling task: {e}")
-        
+
         # Thumbnail message delete kar
         if "mystic" in db[chat_id][0]:
             try:
@@ -65,7 +65,7 @@ async def _clear_(chat_id: int):
                 print(f"✅ Thumbnail message deleted")
             except:
                 pass
-    
+
     db[chat_id] = []
     await remove_active_video_chat(chat_id)
     await remove_active_chat(chat_id)
@@ -261,7 +261,7 @@ class Call(PyTgCalls):
     async def force_stop_stream(self, chat_id: int):
         # Pehle animation cancel kar
         await _clear_(chat_id)
-        
+
         assistant = await group_assistant(self, chat_id)
         try:
             check = db.get(chat_id)
@@ -718,7 +718,7 @@ class Call(PyTgCalls):
 
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
-    
+
     async def ping(self):
         pings = []
         if config.STRING1:
@@ -733,7 +733,7 @@ class Call(PyTgCalls):
             pings.append(self.five.ping)
         return str(round(sum(pings) / len(pings), 3)) if pings else "0"
 
-    
+
     async def start(self):
         LOGGER(__name__).info("Starting PyTgCalls Client...\n")
         if config.STRING1:
@@ -747,7 +747,7 @@ class Call(PyTgCalls):
         if config.STRING5:
             await self.five.start()
 
-    
+
     async def decorators(self):
         for string, client in [
             (config.STRING1, self.one),
