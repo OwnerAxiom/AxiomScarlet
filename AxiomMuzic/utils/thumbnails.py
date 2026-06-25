@@ -189,7 +189,6 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
     
     timestamp = int(time.time()) if not use_cache else 0
     cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
-
     if use_cache and os.path.exists(cache_path):
         return cache_path
 
@@ -209,7 +208,7 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
         title, thumbnail_url, duration, views, channel = (
             "Song", YOUTUBE_IMG_URL, None, "Unknown", "YouTube"
         )
-
+        
     is_live = not duration or str(duration).strip().lower() in {"", "live"}
     duration_text = "LIVE" if is_live else (duration or "0:00")
 
@@ -222,7 +221,6 @@ async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = T
                         await f.write(await resp.read())
     except:
         return YOUTUBE_IMG_URL
-
     try:
         # BACKGROUND
         base = Image.open(thumb_path).convert("RGBA")
