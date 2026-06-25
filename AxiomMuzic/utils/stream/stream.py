@@ -22,83 +22,83 @@ import asyncio
 from pyrogram.types import InputMediaPhoto
 
 
-# async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat_id, title, duration_min, user_name):
-#     """
-#     Real-time sync - Actual playback time ke according thumbnail update
-#     """
-#     print(f"🎬 Animation started for: {videoid}")
+async def animate_thumbnail_progress(_, message, videoid, duration_seconds, chat_id, title, duration_min, user_name):
+    """
+    Real-time sync - Actual playback time ke according thumbnail update
+    """
+    print(f"🎬 Animation started for: {videoid}")
     
-#     try:
-#         from AxiomMuzic.utils.thumbnails import get_thumb
-#         from pytgcalls import PyTgCalls
+    try:
+        from AxiomMuzic.utils.thumbnails import get_thumb
+        from pytgcalls import PyTgCalls
         
-#         start_time = time.time()
-#         last_update = 0
+        start_time = time.time()
+        last_update = 0
         
-#         while True:
-#             # Cancellation check
-#             try:
-#                 if asyncio.current_task().cancelled():
-#                     print(f"✅ Animation cancelled for {videoid}")
-#                     try:
-#                         await message.delete()
-#                     except:
-#                         pass
-#                     return
-#             except:
-#                 pass
+        while True:
+            # Cancellation check
+            try:
+                if asyncio.current_task().cancelled():
+                    print(f"✅ Animation cancelled for {videoid}")
+                    try:
+                        await message.delete()
+                    except:
+                        pass
+                    return
+            except:
+                pass
             
-#             # Actual elapsed time calculate kar
-#             elapsed = time.time() - start_time
-#             progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
+            # Actual elapsed time calculate kar
+            elapsed = time.time() - start_time
+            progress_percent = min(int((elapsed / duration_seconds) * 100), 100)
             
-#             # Har 5 second mein update (agar 5% change hua ho)
-#             if progress_percent >= last_update + 5 or progress_percent == 100:
-#                 try:
-#                     thumb_path = await get_thumb(videoid, progress_percent=progress_percent, use_cache=False, user_name=user_name)
+            # Har 5 second mein update (agar 5% change hua ho)
+            if progress_percent >= last_update + 5 or progress_percent == 100:
+                try:
+                    thumb_path = await get_thumb(videoid, progress_percent=progress_percent, use_cache=False, user_name=user_name)
                     
-#                     if thumb_path and not thumb_path.endswith("logo.jpg"):
-#                         try:
-#                             await message.edit_media(
-#                                 media=InputMediaPhoto(
-#                                     media=thumb_path,
-#                                     caption=_["stream_1"].format(
-#                                         f"https://t.me/{app.username}?start=info_{videoid}",
-#                                         title[:23],
-#                                         duration_min,
-#                                         user_name,
-#                                     ),
-#                                 ),
-#                             )
-#                             last_update = progress_percent
-#                             print(f"✅ Updated to {progress_percent}%")
-#                         except Exception as e:
-#                             error_str = str(e).lower()
-#                             if "message to edit not found" in error_str or "chat not found" in error_str:
-#                                 print(f"🛑 Message deleted, stopping")
-#                                 return
-#                             continue
+                    if thumb_path and not thumb_path.endswith("logo.jpg"):
+                        try:
+                            await message.edit_media(
+                                media=InputMediaPhoto(
+                                    media=thumb_path,
+                                    caption=_["stream_1"].format(
+                                        f"https://t.me/{app.username}?start=info_{videoid}",
+                                        title[:23],
+                                        duration_min,
+                                        user_name,
+                                    ),
+                                ),
+                            )
+                            last_update = progress_percent
+                            print(f"✅ Updated to {progress_percent}%")
+                        except Exception as e:
+                            error_str = str(e).lower()
+                            if "message to edit not found" in error_str or "chat not found" in error_str:
+                                print(f"🛑 Message deleted, stopping")
+                                return
+                            continue
                 
-#                 except Exception as e:
-#                     print(f"Error generating thumbnail: {e}")
+                except Exception as e:
+                    print(f"Error generating thumbnail: {e}")
             
-#             # Agar 100% ho gaya toh stop
-#             if progress_percent >= 100:
-#                 print(f"✅ Animation completed (100%)")
-#                 break
+            # Agar 100% ho gaya toh stop
+            if progress_percent >= 100:
+                print(f"✅ Animation completed (100%)")
+                break
             
-#             await asyncio.sleep(1)  # Har second check kar
+            await asyncio.sleep(1)  # Har second check kar
             
-#     except asyncio.CancelledError:
-#         print(f"✅ Animation task cancelled for {videoid}")
-#         try:
-#             await message.delete()
-#         except:
-#             pass
-#     except Exception as e:
-#         print(f"💥 Animation error: {e}")
-#         import traceback
-#         traceback.print_exc()
+    except asyncio.CancelledError:
+        print(f"✅ Animation task cancelled for {videoid}")
+        try:
+            await message.delete()
+        except:
+            pass
+    except Exception as e:
+        print(f"💥 Animation error: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 async def stream(
@@ -210,14 +210,14 @@ async def stream(
                     else:
                         duration_sec = 180
                     
-                    # Animation task ko store kar
-                    # animation_task = asyncio.create_task(
-                    #     animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
-                    # )
-                    # db[chat_id][0]["animation_task"] = animation_task
+                    Animation task ko store kar
+                    animation_task = asyncio.create_task(
+                        animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
+                    )
+                    db[chat_id][0]["animation_task"] = animation_task
                     
-                # except Exception as e:
-                #     print(f"Failed to start animation: {e}")
+                except Exception as e:
+                    print(f"Failed to start animation: {e}")
         if count == 0:
             return
         else:
@@ -316,14 +316,14 @@ async def stream(
                 else:
                     duration_sec = 180
                 
-                # Animation task ko store kar
-            #     animation_task = asyncio.create_task(
-            #         animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
-            #     )
-            #     db[chat_id][0]["animation_task"] = animation_task
+                Animation task ko store kar
+                animation_task = asyncio.create_task(
+                    animate_thumbnail_progress(_, run, vidid, duration_sec, chat_id, title, duration_min, user_name or "AxiomUser")
+                )
+                db[chat_id][0]["animation_task"] = animation_task
                 
-            # except Exception as e:
-            #     print(f"Failed to start animation: {e}")
+            except Exception as e:
+                print(f"Failed to start animation: {e}")
     elif streamtype == "soundcloud":
         file_path = result["filepath"]
         title = result["title"]
