@@ -1,428 +1,215 @@
 import os
 import re
-import random
-import time
-import aiofiles
 import aiohttp
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
-from py_yt import VideosSearch
-from config import YOUTUBE_IMG_URL
+import aiofiles
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from functools import lru_cache
 
-CACHE_DIR = "cache"
-os.makedirs(CACHE_DIR, exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ASSETS = os.path.join(BASE_DIR, "..", "assets")
+FONT_TITLE = os.path.join(ASSETS, "f.ttf")
+FONT_NORMAL = os.path.join(ASSETS, "cfont.ttf")
+TEMPLATE_PATH = os.path.join(ASSETS, "thumb1.png")
 
-# 185+ Random Bright Colors
-COLOR_PALETTE = [
-    (0, 230, 118), (124, 77, 255), (255, 23, 68), (255, 109, 0),
-    (0, 176, 255), (255, 193, 7), (233, 30, 99), (0, 200, 150),
-    (156, 39, 176), (255, 87, 34), (33, 150, 243), (76, 175, 80),
-    (255, 152, 0), (121, 85, 72), (96, 125, 139), (244, 67, 54),
-    (232, 30, 99), (103, 58, 183), (63, 81, 181), (3, 169, 244),
-    (0, 188, 212), (0, 150, 136), (139, 195, 74), (205, 220, 57),
-    (255, 235, 59), (255, 64, 129), (224, 64, 251), (92, 107, 192),
-    (68, 138, 255), (0, 229, 255), (29, 233, 182), (118, 255, 3),
-    (176, 255, 0), (238, 255, 65), (255, 234, 0), (255, 214, 0),
-    (255, 145, 0), (255, 82, 82), (255, 128, 171), (255, 179, 207),
-    (234, 199, 255), (209, 196, 233), (197, 202, 233), (197, 214, 255),
-    (178, 235, 242), (178, 223, 219), (200, 230, 201), (220, 237, 200),
-    (240, 244, 195), (255, 249, 196), (255, 236, 179), (255, 224, 178),
-    (255, 204, 188), (255, 205, 210), (252, 228, 236), (243, 229, 245),
-    (237, 231, 246), (232, 234, 246), (227, 242, 253), (224, 247, 250),
-    (224, 242, 241), (232, 245, 233), (241, 248, 233), (249, 251, 231),
-    (255, 252, 225), (255, 248, 225), (255, 243, 224), (251, 233, 231),
-    (255, 235, 238), (255, 99, 71), (255, 140, 0), (255, 215, 0),
-    (50, 205, 50), (64, 224, 208), (72, 61, 139), (95, 158, 160),
-    (100, 149, 237), (102, 205, 170), (106, 90, 205), (112, 128, 144),
-    (119, 136, 153), (123, 104, 238), (127, 255, 0), (127, 255, 212),
-    (128, 0, 0), (128, 0, 128), (128, 128, 0), (135, 206, 235),
-    (135, 206, 250), (138, 43, 226), (139, 69, 19), (143, 188, 143),
-    (144, 238, 144), (147, 112, 219), (148, 0, 211), (152, 251, 152),
-    (153, 50, 204), (154, 205, 50), (160, 82, 45), (165, 42, 42),
-    (169, 169, 169), (173, 216, 230), (175, 238, 238), (176, 196, 222),
-    (176, 224, 230), (178, 34, 34), (184, 134, 11), (186, 85, 211),
-    (188, 143, 143), (189, 183, 107), (192, 192, 192), (199, 21, 133),
-    (205, 92, 92), (205, 133, 63), (208, 32, 144), (210, 105, 30),
-    (210, 180, 140), (216, 191, 216), (218, 112, 214), (218, 165, 32),
-    (219, 112, 147), (220, 20, 60), (220, 220, 220), (221, 160, 221),
-    (222, 184, 135), (224, 255, 255), (230, 230, 250), (233, 150, 122),
-    (238, 130, 238), (238, 221, 130), (238, 232, 170), (240, 128, 128),
-    (240, 230, 140), (240, 248, 255), (240, 255, 240), (240, 255, 255),
-    (244, 164, 96), (245, 222, 179), (245, 245, 220), (245, 245, 245),
-    (245, 255, 250), (246, 255, 237), (248, 248, 255), (249, 255, 240),
-    (250, 128, 114), (250, 235, 215), (250, 240, 230), (253, 245, 230),
-    (255, 0, 0), (255, 0, 255), (255, 20, 147), (255, 218, 185),
-    (255, 222, 173), (255, 228, 185), (255, 228, 196), (255, 228, 225),
-    (255, 239, 213), (255, 240, 245), (255, 245, 238), (255, 250, 205),
-    (255, 250, 240), (255, 250, 250), (255, 255, 0), (255, 255, 224),
-    (255, 255, 240), (255, 255, 250), (255, 255, 255), (255, 255, 245),
-    (0, 0, 0), (25, 25, 112), (30, 144, 255), (46, 139, 87),
-    (47, 79, 79), (60, 179, 113), (65, 105, 225), (70, 130, 180),
-    (72, 209, 204), (75, 0, 130), (85, 107, 47), (100, 0, 0),
-    (105, 105, 105), (111, 0, 255), (118, 0, 255), (120, 0, 255),
-    (125, 0, 255), (130, 0, 255), (135, 0, 255), (140, 0, 255),
-    (145, 0, 255), (150, 0, 255), (155, 0, 255), (160, 0, 255),
-    (165, 0, 255), (170, 0, 255), (175, 0, 255), (180, 0, 255),
-    (185, 0, 255), (190, 0, 255), (195, 0, 255), (200, 0, 255),
-    (205, 0, 255), (210, 0, 255), (215, 0, 255), (220, 0, 255),
-    (225, 0, 255), (230, 0, 255), (235, 0, 255), (240, 0, 255),
-    (245, 0, 255), (250, 0, 255), (255, 0, 250), (255, 0, 245),
-    (255, 0, 240), (255, 0, 235), (255, 0, 230), (255, 0, 225),
-    (255, 0, 220), (255, 0, 215), (255, 0, 210), (255, 0, 205),
-    (255, 0, 200), (255, 0, 195), (255, 0, 190), (255, 0, 185),
-    (255, 0, 180), (255, 0, 175), (255, 0, 170), (255, 0, 165),
-    (255, 0, 160), (255, 0, 155), (255, 0, 150), (255, 0, 145),
-    (255, 0, 140), (255, 0, 135), (255, 0, 130), (255, 0, 125),
-    (255, 0, 120), (255, 0, 115), (255, 0, 110), (255, 0, 105),
-    (255, 0, 100), (255, 0, 95), (255, 0, 90), (255, 0, 85),
-    (255, 0, 80), (255, 0, 75), (255, 0, 70), (255, 0, 65),
-    (255, 0, 60), (255, 0, 55), (255, 0, 50), (255, 0, 45),
-    (255, 0, 40), (255, 0, 35), (255, 0, 30), (255, 0, 25),
-    (255, 0, 20), (255, 0, 15), (255, 0, 10), (255, 0, 5),
-    (255, 5, 0), (255, 10, 0), (255, 15, 0), (255, 20, 0),
-    (255, 25, 0), (255, 30, 0), (255, 35, 0), (255, 40, 0),
-    (255, 45, 0), (255, 50, 0), (255, 55, 0), (255, 60, 0),
-    (255, 65, 0), (255, 70, 0), (255, 75, 0), (255, 80, 0),
-    (255, 85, 0), (255, 90, 0), (255, 95, 0), (255, 100, 0),
-    (255, 105, 0), (255, 110, 0), (255, 115, 0), (255, 120, 0),
-    (255, 125, 0), (255, 130, 0), (255, 135, 0), (255, 140, 0),
-    (255, 145, 0), (255, 150, 0), (255, 155, 0), (255, 160, 0),
-    (255, 165, 0), (255, 170, 0), (255, 175, 0), (255, 180, 0),
-    (255, 185, 0), (255, 190, 0), (255, 195, 0), (255, 200, 0),
-    (255, 205, 0), (255, 210, 0), (255, 215, 0), (255, 220, 0),
-    (255, 225, 0), (255, 230, 0), (255, 235, 0), (255, 240, 0),
-    (255, 245, 0), (255, 250, 0), (250, 255, 0), (245, 255, 0),
-    (240, 255, 0), (235, 255, 0), (230, 255, 0), (225, 255, 0),
-    (220, 255, 0), (215, 255, 0), (210, 255, 0), (205, 255, 0),
-    (200, 255, 0), (195, 255, 0), (190, 255, 0), (185, 255, 0),
-    (180, 255, 0), (175, 255, 0), (170, 255, 0), (165, 255, 0),
-    (160, 255, 0), (155, 255, 0), (150, 255, 0), (145, 255, 0),
-    (140, 255, 0), (135, 255, 0), (130, 255, 0), (125, 255, 0),
-    (120, 255, 0), (115, 255, 0), (110, 255, 0), (105, 255, 0),
-    (100, 255, 0), (95, 255, 0), (90, 255, 0), (85, 255, 0),
-    (80, 255, 0), (75, 255, 0), (70, 255, 0), (65, 255, 0),
-    (60, 255, 0), (55, 255, 0), (50, 255, 0), (45, 255, 0),
-    (40, 255, 0), (35, 255, 0), (30, 255, 0), (25, 255, 0),
-    (20, 255, 0), (15, 255, 0), (10, 255, 0), (5, 255, 0),
-    (0, 255, 5), (0, 255, 10), (0, 255, 15), (0, 255, 20),
-    (0, 255, 25), (0, 255, 30), (0, 255, 35), (0, 255, 40),
-    (0, 255, 45), (0, 255, 50), (0, 255, 55), (0, 255, 60),
-    (0, 255, 65), (0, 255, 70), (0, 255, 75), (0, 255, 80),
-    (0, 255, 85), (0, 255, 90), (0, 255, 95), (0, 255, 100),
-    (0, 255, 105), (0, 255, 110), (0, 255, 115), (0, 255, 120),
-    (0, 255, 125), (0, 255, 130), (0, 255, 135), (0, 255, 140),
-    (0, 255, 145), (0, 255, 150), (0, 255, 155), (0, 255, 160),
-    (0, 255, 165), (0, 255, 170), (0, 255, 175), (0, 255, 180),
-    (0, 255, 185), (0, 255, 190), (0, 255, 195), (0, 255, 200),
-    (0, 255, 205), (0, 255, 210), (0, 255, 215), (0, 255, 220),
-    (0, 255, 225), (0, 255, 230), (0, 255, 235), (0, 255, 240),
-    (0, 255, 245), (0, 255, 250), (0, 250, 255), (0, 245, 255),
-    (0, 240, 255), (0, 235, 255), (0, 230, 255), (0, 225, 255),
-    (0, 220, 255), (0, 215, 255), (0, 210, 255), (0, 205, 255),
-    (0, 200, 255), (0, 195, 255), (0, 190, 255), (0, 185, 255),
-    (0, 180, 255), (0, 175, 255), (0, 170, 255), (0, 165, 255),
-    (0, 160, 255), (0, 155, 255), (0, 150, 255), (0, 145, 255),
-    (0, 140, 255), (0, 135, 255), (0, 130, 255), (0, 125, 255),
-    (0, 120, 255), (0, 115, 255), (0, 110, 255), (0, 105, 255),
-    (0, 100, 255), (0, 95, 255), (0, 90, 255), (0, 85, 255),
-    (0, 80, 255), (0, 75, 255), (0, 70, 255), (0, 65, 255),
-    (0, 60, 255), (0, 55, 255), (0, 50, 255), (0, 45, 255),
-    (0, 40, 255), (0, 35, 255), (0, 30, 255), (0, 25, 255),
-    (0, 20, 255), (0, 15, 255), (0, 10, 255), (0, 5, 255),
-    (5, 0, 255), (10, 0, 255), (15, 0, 255), (20, 0, 255),
-    (25, 0, 255), (30, 0, 255), (35, 0, 255), (40, 0, 255),
-    (45, 0, 255), (50, 0, 255), (55, 0, 255), (60, 0, 255),
-    (65, 0, 255), (70, 0, 255), (75, 0, 255), (80, 0, 255),
-    (85, 0, 255), (90, 0, 255), (95, 0, 255), (100, 0, 255),
-    (105, 0, 255), (110, 0, 255), (115, 0, 255), (120, 0, 255),
-    (125, 0, 255), (130, 0, 255), (135, 0, 255), (140, 0, 255),
-    (145, 0, 255), (150, 0, 255), (155, 0, 255), (160, 0, 255),
-    (165, 0, 255), (170, 0, 255), (175, 0, 255), (180, 0, 255),
-    (185, 0, 255), (190, 0, 255), (195, 0, 255), (200, 0, 255),
-    (205, 0, 255), (210, 0, 255), (215, 0, 255), (220, 0, 255),
-    (225, 0, 255), (230, 0, 255), (235, 0, 255), (240, 0, 255),
-    (245, 0, 255), (250, 0, 255),
-]
-
-# Layout - IMPROVED SPACING & CENTERING
-THUMB_SIZE = 420
-THUMB_X = 60
-THUMB_Y = (720 - THUMB_SIZE) // 2
-THUMB_RADIUS = 50
-
-TITLE_X = THUMB_X + THUMB_SIZE + 50  # 45 se 50 kar diya
-TITLE_Y = THUMB_Y + 20  # 15 se 20 kar diya
-META_Y = TITLE_Y + 75  # 60 se 75 kar diya - Title aur Channel ke beech zyada gap
-VIEWS_Y = META_Y + 55  # 50 se 55 kar diya
-PLAYER_Y = VIEWS_Y + 55  # 50 se 55 kar diya
-DEV_Y = PLAYER_Y + 55  # 50 se 55 kar diya
-REQUESTED_Y = DEV_Y + 55  # 50 se 55 kar diya
-
-BAR_X = TITLE_X
-BAR_Y = REQUESTED_Y + 85  # 80 se 85 kar diya
-BAR_WIDTH = 630  # 650 se 630 kar diya - right side se safe
-BAR_HEIGHT = 8
-
-TIME_Y = BAR_Y + 35
-
-MAX_TITLE_WIDTH = 630  # 650 se 630 kar diya - overlap se bachne ke liye
-
-
-def trim_text(text, font, max_width):
+@lru_cache(maxsize=4)
+def _get_font(path: str, size: int):
     try:
-        if hasattr(font, 'getlength'):
-            if font.getlength(text) <= max_width:
-                return text
-            for i in range(len(text) - 1, 0, -1):
-                if font.getlength(text[:i] + "…") <= max_width:
-                    return text[:i] + "…"
-            return "…"
-        else:
-            return text[:60]
+        return ImageFont.truetype(path, size)
     except:
-        return text[:60]
+        return ImageFont.load_default()
 
+def _create_rounded_image(img, radius):
+    mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, img.size[0]-1, img.size[1]-1], radius=radius, fill=255)
+    result = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    result.paste(img, (0, 0), mask)
+    return result
 
-async def get_thumb(videoid: str, progress_percent: int = 0, use_cache: bool = True, user_name: str = "AxiomUser") -> str:
-    print(f"📥 get_thumb called with videoid: {videoid}, progress: {progress_percent}%")
-
-    use_cache = False
+def _add_soft_glow(img, glow_color=(90, 170, 90), num_layers=15):
+    """Add multiple soft glow layers around thumbnail - edges ko soft karega"""
+    # Create larger canvas for glow layers
+    expand_size = num_layers * 3
+    glow_size = (img.size[0] + expand_size * 2, img.size[1] + expand_size * 2)
+    glow_img = Image.new("RGBA", glow_size, (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow_img)
     
-    timestamp = int(time.time()) if not use_cache else 0
-    cache_path = os.path.join(CACHE_DIR, f"{videoid}_p{progress_percent}_t{timestamp}.png")
+    # Draw 15 layers of expanding rounded rectangles (soft fade effect)
+    for layer in range(num_layers, 0, -1):
+        opacity = int(35 * (layer / num_layers))  # 35 se 0 tak fade
+        expand = layer * 2
+        
+        glow_draw.rounded_rectangle(
+            [expand, expand, glow_size[0] - expand, glow_size[1] - expand],
+            radius=35 + layer,  # 35 se 50 tak
+            fill=(*glow_color, opacity)
+        )
     
-    if use_cache and os.path.exists(cache_path):
-        return cache_path
+    # Heavy blur for ultra-soft glow
+    glow_img = glow_img.filter(ImageFilter.GaussianBlur(15))
+    
+    # Paste original image in center
+    paste_x = expand_size // 2
+    paste_y = expand_size // 2
+    glow_img.paste(img, (paste_x, paste_y), img if img.mode == "RGBA" else None)
+    
+    return glow_img
 
-    thumb_path = os.path.join(CACHE_DIR, f"thumb_{videoid}.png")
-    accent = random.choice(COLOR_PALETTE)
-
+async def get_thumb(videoid: str, user_name: str = "AxiomUser") -> str:
+    output = f"cache/{videoid}.png"
+    os.makedirs("cache", exist_ok=True)
+    
     try:
-        results = VideosSearch(f"https://www.youtube.com/watch?v={videoid}", limit=1)
-        results_data = await results.next()
-        data = results_data.get("result", [{}])[0]
-        title = re.sub(r"\W+", " ", data.get("title", "Song")).title()
-        thumbnail_url = data.get("thumbnails", [{}])[0].get("url", YOUTUBE_IMG_URL)
-        duration = data.get("duration")
-        views = data.get("viewCount", {}).get("short", "Unknown")
-        channel = data.get("channel", {}).get("name", "YouTube")
+        template = Image.open(TEMPLATE_PATH).convert("RGBA")
     except:
-        title, thumbnail_url, duration, views, channel = (
-            "Song", YOUTUBE_IMG_URL, None, "Unknown", "YouTube"
-        )
-
-    is_live = not duration or str(duration).strip().lower() in {"", "live"}
-    duration_text = "LIVE" if is_live else (duration or "0:00")
-
+        raise FileNotFoundError(f"Template not found: {TEMPLATE_PATH}")
+    
+    draw = ImageDraw.Draw(template)
+    
+    # Fetch metadata
+    url = f"https://www.youtube.com/watch?v={videoid}"
+    title = "Unknown Song"
+    duration = "00:00"
+    views = "0 views"
+    channel = "Unknown"
+    thumb_url = ""
+    
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(thumbnail_url, timeout=10) as resp:
-                if resp.status == 200:
-                    async with aiofiles.open(thumb_path, "wb") as f:
-                        await f.write(await resp.read())
-    except:
-        return YOUTUBE_IMG_URL
-
-    try:
-        # BACKGROUND
-        base = Image.open(thumb_path).convert("RGBA")
-        base = base.resize((1280, 720), Image.LANCZOS)
-        base = ImageEnhance.Brightness(base).enhance(1.1)
-        bg = base.filter(ImageFilter.GaussianBlur(50))
-        dark = Image.new("RGBA", bg.size, (0, 0, 0, 100))
-        bg = Image.alpha_composite(bg, dark)
-
-        # OUTER BORDER - 16 Layer Inner Smooth Glow (Thumbnail Jaisa)
-        border_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        bd = ImageDraw.Draw(border_layer)
-        
-        # 1. Thin solid outer border
-        bd.rectangle((0, 0, 1279, 719), outline=accent, width=6)
-        
-        # 2. 16 Layer Inner Glow - Thumbnail jaisa smooth fade (andar ki taraf)
-        inner_glow_params = [
-            (2, 250), (4, 235), (6, 218), (8, 195), (10, 172),
-            (12, 150), (14, 130), (16, 112), (18, 95), (20, 80),
-            (22, 65), (24, 52), (26, 40), (28, 30), (30, 22), (32, 15)
-        ]
-        
-        for inset, alpha in inner_glow_params:
-            bd.rectangle(
-                (inset, inset, 1279 - inset, 719 - inset),
-                outline=accent + (alpha,),
-                width=2
-            )
-            
-        bg = Image.alpha_composite(bg, border_layer)
-
-        # THUMBNAIL
-        thumb_img = Image.open(thumb_path).convert("RGBA")
-        thumb_img = thumb_img.resize((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
-        thumb_img = ImageEnhance.Brightness(thumb_img).enhance(1.1)
-
-        thumb_mask = Image.new("L", (THUMB_SIZE, THUMB_SIZE), 0)
-        ImageDraw.Draw(thumb_mask).rounded_rectangle(
-            (0, 0, THUMB_SIZE, THUMB_SIZE), radius=THUMB_RADIUS, fill=255
-        )
-
-        # Thumbnail shadow - ACCENT COLOR
-        shadow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        sd = ImageDraw.Draw(shadow)
-        sd.rounded_rectangle(
-            (THUMB_X - 8, THUMB_Y - 8,
-             THUMB_X + THUMB_SIZE + 8, THUMB_Y + THUMB_SIZE + 8),
-            radius=THUMB_RADIUS + 10, fill=accent + (140,)
-        )
-        shadow = shadow.filter(ImageFilter.GaussianBlur(25))
-        bg = Image.alpha_composite(bg, shadow)
-
-        # Thumbnail border with 16 LAYERS ULTRA SMOOTH GRADIENT
-        thumb_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-        tg = ImageDraw.Draw(thumb_glow)
-        
-        # 16 layers - bahut smooth fade
-        for spread, alpha in [(32, 15), (30, 22), (28, 30), (26, 40), (24, 52), (22, 65), (20, 80), (18, 95), 
-                              (16, 112), (14, 130), (12, 150), (10, 172), (8, 195), (6, 218), (4, 235), (2, 250)]:
-            tg.rounded_rectangle(
-                (THUMB_X - spread, THUMB_Y - spread,
-                 THUMB_X + THUMB_SIZE + spread, THUMB_Y + THUMB_SIZE + spread),
-                radius=THUMB_RADIUS + spread,
-                outline=accent + (alpha,),
-                width=3
-            )
-        
-        # Inner glow
-        for inner, alpha in [(3, 120), (6, 80)]:
-            tg.rounded_rectangle(
-                (THUMB_X + inner, THUMB_Y + inner,
-                 THUMB_X + THUMB_SIZE - inner, THUMB_Y + THUMB_SIZE - inner),
-                radius=THUMB_RADIUS - inner,
-                outline=accent + (alpha,),
-                width=2
-            )
-        
-        bg = Image.alpha_composite(bg, thumb_glow)
-        bg.paste(thumb_img, (THUMB_X, THUMB_Y), thumb_mask)
-
-        # DRAWING
-        draw = ImageDraw.Draw(bg)
-
-        # Fonts
-        try:
-            title_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 52)
-            axiom_font = ImageFont.truetype("AxiomMuzic/assets/assets/f.ttf", 30)
-            meta_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 32)
-            time_font = ImageFont.truetype("AxiomMuzic/assets/assets/cfont.ttf", 28)
-        except:
-            title_font = ImageFont.load_default()
-            meta_font = title_font
-            time_font = title_font
-
-        # Title - Simple white with minimal shadow
-        trimmed = trim_text(title, title_font, MAX_TITLE_WIDTH)
-        draw.text((TITLE_X + 1, TITLE_Y + 1), trimmed, fill=(0, 0, 0, 100), font=title_font)
-        draw.text((TITLE_X, TITLE_Y), trimmed, fill="white", font=title_font)
-
-        # Channel - LIGHT GRAY
-        draw.text((TITLE_X, META_Y), f"Channel | {channel}",
-                  fill=(190, 190, 190), font=axiom_font)
-
-        # Views - LIGHT GRAY
-        draw.text((TITLE_X, VIEWS_Y), f"Views | {views}",
-                  fill=(190, 190, 190), font=axiom_font)
-
-        # Player - LIGHT GRAY
-        draw.text((TITLE_X, PLAYER_Y), f"Player | @AxiomVcBot",
-                  fill=(190, 190, 190), font=axiom_font)
-
-        # Dev - LIGHT GRAY
-        draw.text((TITLE_X, DEV_Y), "Dev: Maanav",
-                  fill=(190, 190, 190), font=axiom_font)
-
-        # Requested By - "Requested By |" gray, naam accent color mein
-        try:
-            from unidecode import unidecode
-            clean_name = re.sub(r'<[^>]+>', '', str(user_name))
-            clean_name = unidecode(clean_name).strip()
-        except:
-            clean_name = re.sub(r'<[^>]+>', '', str(user_name)).strip()
-        
-        if not clean_name:
-            clean_name = "AxiomUser"
-        
-        prefix_text = "Requested By | "
-        draw.text((TITLE_X, REQUESTED_Y), prefix_text, 
-                  fill=(190, 190, 190), font=axiom_font)
-        
-        prefix_width = axiom_font.getlength(prefix_text)
-        draw.text((TITLE_X + prefix_width, REQUESTED_Y), clean_name, 
-                  fill=accent, font=axiom_font)
-
-        # Progress bar background
-        bar_end = BAR_X + BAR_WIDTH
-        draw.rounded_rectangle(
-            [(BAR_X, BAR_Y), (bar_end, BAR_Y + BAR_HEIGHT)],
-            radius=10, fill=(60, 60, 60)
-        )
-
-        # Progress fill
-        progress = int(BAR_WIDTH * (progress_percent / 100))
-        draw.rounded_rectangle(
-            [(BAR_X, BAR_Y), (BAR_X + progress, BAR_Y + BAR_HEIGHT)],
-            radius=10, fill=accent
-        )
-
-        # Progress circle - VERY SMALL AND SOFT
-        cx, cy = BAR_X + progress, BAR_Y + BAR_HEIGHT // 2
-        
-        # Minimal glow - sirf 3 layers
-        for glow_size, alpha in [(12, 30), (8, 60), (4, 100)]:
-            draw.ellipse([(cx - glow_size, cy - glow_size), 
-                         (cx + glow_size, cy + glow_size)],
-                        fill=accent + (alpha,))
-        
-        # Center - bilkul chhota
-        draw.ellipse([(cx - 3, cy - 3), (cx + 3, cy + 3)], fill="white")
-
-        # Calculate current time
-        try:
-            if duration and ":" in str(duration):
-                parts = str(duration).split(":")
-                if len(parts) == 2:
-                    total_seconds = int(parts[0]) * 60 + int(parts[1])
-                elif len(parts) == 3:
-                    total_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-                else:
-                    total_seconds = 0
-                
-                current_seconds = int((progress_percent / 100) * total_seconds)
-                current_minutes = current_seconds // 60
-                current_secs = current_seconds % 60
-                current_time = f"{current_minutes}:{current_secs:02d}"
-            else:
-                current_time = "0:00"
-        except:
-            current_time = "0:00"
-
-        # Times - LIGHT GRAY (bar ke niche)
-        draw.text((BAR_X, TIME_Y), current_time, fill=(200, 200, 200), font=time_font)  
-        total = duration_text if not is_live else "LIVE"
-        draw.text((bar_end - 50, TIME_Y), total, fill=(200, 200, 200), font=time_font)  
-
-        # SAVE
-        bg = bg.convert("RGB")
-        bg.save(cache_path, "PNG", quality=100)
-        print(f"✓ Thumbnail saved with color RGB{accent} | Progress: {progress_percent}%")
-
+        from py_yt import VideosSearch
+        data = (await VideosSearch(url, limit=1).next())["result"][0]
+        title = re.sub(r"[\x00-\x1f\x7f]", "", data.get("title", "Unknown")).strip()
+        duration = data.get("duration", "00:00") or "00:00"
+        thumb_url = data.get("thumbnails", [{}])[-1].get("url", "").split("?")[0]
+        v_raw = str(data.get("viewCount", {}).get("short", "N/A"))
+        vc = re.sub(r'\s*views?\s*', '', v_raw, flags=re.IGNORECASE).strip()
+        views = f"{vc} views"
+        channel = data.get("channel", {}).get("name", "Unknown")
     except Exception as e:
-        import traceback
-        print(f"Error: {e}")
-        traceback.print_exc()
-        return YOUTUBE_IMG_URL
-    finally:
+        print(f"[ERROR] Metadata: {e}")
+    
+    # Download album art
+    album_size = 305
+    album_img = Image.new("RGBA", (album_size, album_size), (76, 175, 80))
+    if thumb_url:
         try:
-            if os.path.exists(thumb_path):
-                os.remove(thumb_path)
-        except:
-            pass
-
-    return cache_path
+            cache_file = f"cache/album_{videoid}.jpg"
+            async with aiohttp.ClientSession() as sess:
+                async with sess.get(thumb_url, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    async with aiofiles.open(cache_file, "wb") as f:
+                        await f.write(await r.read())
+            album_img = Image.open(cache_file).resize((album_size, album_size), Image.LANCZOS).convert("RGBA")
+            album_img = _create_rounded_image(album_img, 35)
+            
+            # Add soft glow around edges (green color to match card)
+            album_img = _add_soft_glow(album_img, glow_color=(100, 180, 100), glow_radius=15, glow_strength=120)
+            
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
+        except Exception as e:
+            print(f"[ERROR] Album art: {e}")
+    
+    # Album art position
+    template.paste(album_img, (140, 129), album_img)
+    
+    # Fonts
+    font_title = _get_font(FONT_TITLE, 60)
+    font_subtitle = _get_font(FONT_NORMAL, 35)
+    font_time = _get_font(FONT_NORMAL, 30)
+    font_requested = _get_font(FONT_TITLE, 28)  # f.ttf for requested by
+    
+    # Truncate title
+    max_title_width = 900
+    title_text = title
+    while draw.textlength(title_text, font=font_title) > max_title_width and len(title_text) > 3:
+        title_text = title_text[:-1]
+    if len(title_text) < len(title):
+        title_text = title_text[:-3] + "…"
+    
+    # Title position
+    title_x = 500
+    title_y = 120
+    
+    # Green glow layers
+    for i in range(3, 0, -1):
+        draw.text((title_x + i, title_y + i), title_text, 
+                  fill=(50, 180, 50, 80), font=font_title)
+    
+    # Main title
+    draw.text((title_x, title_y), title_text, fill=(220, 255, 100), font=font_title)
+    
+    # Channel
+    subtitle_y = 200
+    draw.text((title_x, subtitle_y), channel, fill=(210, 220, 210), font=font_subtitle)
+    
+    # Pipe + Views
+    channel_width = draw.textlength(channel, font=font_subtitle)
+    draw.text((title_x + channel_width + 12, subtitle_y), "|", fill=(210, 220, 210), font=font_subtitle)
+    draw.text((title_x + channel_width + 32, subtitle_y), views, fill=(210, 220, 210), font=font_subtitle)
+    
+    # ============ REQUESTED BY + DEV (NEW SECTION) ============
+    requested_y = 250  # Channel/views ke niche
+    
+    # Clean user name (purane wale logic se - unidecode)
+    try:
+        from unidecode import unidecode
+        clean_name = re.sub(r'<[^>]+>', '', str(user_name))
+        clean_name = unidecode(clean_name).strip()
+    except:
+        clean_name = re.sub(r'<[^>]+>', '', str(user_name)).strip()
+    
+    # Empty check
+    if not clean_name:
+        clean_name = "AxiomUser"
+    
+    # Autoplay check
+    if clean_name.lower() in ["autoplay", "auto", "autobot"]:
+        clean_name = "Autoplay"
+    
+    # Accent color (lime green - title ka same color)
+    accent = (0, 0, 0)
+    
+    # "Requested By | " - gray color
+    prefix_text = "Requested By:- "
+    draw.text((title_x, requested_y), prefix_text, 
+              fill=(220, 255, 100), font=font_requested)
+    
+    # User name - accent color
+    prefix_width = draw.textlength(prefix_text, font=font_requested)
+    draw.text((title_x + prefix_width, requested_y), clean_name, 
+              fill=accent, font=font_requested)
+    
+    # Pipe + Dev credit
+    name_width = draw.textlength(clean_name, font=font_requested)
+    dev_start_x = title_x + prefix_width + name_width + 15
+    draw.text((dev_start_x, requested_y), "|", fill=(210, 220, 210), font=font_requested)
+    
+    dev_text = " Dev:- CreativeAxiom"
+    draw.text((dev_start_x + 15, requested_y), dev_text, fill=(220, 255, 100), font=font_requested)
+    # ==========================================================
+    
+    # Calculate current time
+    try:
+        parts = duration.split(":")
+        total_seconds = int(parts[0]) * 60 + int(parts[1]) if len(parts) == 2 else 225
+    except:
+        total_seconds = 225
+    
+    current_seconds = int(total_seconds * 0.30)
+    current_min = current_seconds // 60
+    current_sec = current_seconds % 60
+    current_time = f"{current_min}:{current_sec:02d}"
+    
+    # Time position
+    time_y = 520
+    
+    # Current time - LEFT
+    draw.text((135, time_y), current_time, fill=(220, 255, 100), font=font_time)
+    
+    # Duration - RIGHT
+    dur_width = draw.textlength(duration, font=font_time)
+    draw.text((1480 - dur_width, time_y), duration, fill=(220, 255, 100), font=font_time)
+    
+    # Save
+    final = template.convert("RGB")
+    final.save(output, "PNG", quality=100)
+    
+    return output
